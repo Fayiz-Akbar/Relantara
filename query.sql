@@ -66,6 +66,22 @@ ALTER TABLE `tbl_admin`
     ADD `updated_at` TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     ADD `deleted_at` TIMESTAMP NULL DEFAULT NULL;
 
+ALTER TABLE `tbl_kegiatan`
+    ADD `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ADD `updated_at` TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    ADD `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+    MODIFY `status_kegiatan` ENUM('Pending', 'Published', 'Rejected', 'Completed', 'Cancelled') 
+        NOT NULL DEFAULT 'Pending';
+
+ALTER TABLE `tbl_penyelenggara`
+    ADD `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `tanggal_daftar`,
+    ADD `updated_at` TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    ADD `deleted_at` TIMESTAMP NULL DEFAULT NULL;
+
+ALTER TABLE `tbl_relawan`
+    ADD `updated_at` TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP AFTER `tanggal_daftar`,
+    ADD `deleted_at` TIMESTAMP NULL DEFAULT NULL;
+
 CREATE TABLE tbl_pendaftaran (
   id_pendaftaran INT AUTO_INCREMENT PRIMARY KEY,
   id_relawan INT NOT NULL,
@@ -81,3 +97,17 @@ CREATE TABLE tbl_pendaftaran (
 INSERT INTO tbl_admin (username, password, nama_lengkap) 
 VALUES ('admin', '$2y$10$Y.aJ3u.3y.E/ii.A8kI.De.L.B.rJ1O6bY8z.N3fJ5.b.mXzJ3j.K', 'Admin Utama');
 
+/* * Kueri 1: Membuat 1 Penyelenggara 'Verified'
+ * Kita butuh ini agar id_penyelenggara di tbl_kegiatan valid.
+ * (Passwordnya 'pass1234')
+ */
+INSERT INTO `tbl_penyelenggara` 
+    (`id_penyelenggara`, `nama_organisasi`, `email`, `password`, `status_verifikasi`) 
+VALUES 
+    (1, 'Komunitas Peduli Lingkungan', 'komunitas@email.com', '$2y$10$Y.aJ3u.3y.E/ii.A8kI.De.L.B.rJ1O6bY8z.N3fJ5.b.mXzJ3j.K', 'Verified');
+
+INSERT INTO `tbl_kegiatan` 
+    (`id_penyelenggara`, `judul`, `deskripsi`, `lokasi`, `benefit`) 
+VALUES 
+    (1, 'Dummy: Tanam 1000 Pohon', 'Deskripsi untuk kegiatan tanam pohon...', 'Hutan Kota', 'Sertifikat, Makan Siang'),
+    (1, 'Dummy: Ajar Koding Gratis', 'Deskripsi untuk kegiatan ajar koding...', 'Online via Zoom', 'Relasi, Portofolio');
