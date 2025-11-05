@@ -1,5 +1,6 @@
 <?php
 header('Content-Type: application/json');
+include '../config/auth_check.php';
 include '../config/db_connect.php';
 
 $response = ['status' => 'error', 'message' => 'Terjadi kesalahan.'];
@@ -13,14 +14,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tanggal_mulai = $_POST['tanggal_mulai'] ?? null;
     $tanggal_selesai = $_POST['tanggal_selesai'] ?? null;
     $link_pendaftaran = $_POST['link_pendaftaran'] ?? '';
+    $tanggal_create = date('Y-m-d');
+
+    $penyelenggara_safe = preg_replace('/[^\w\-]+/', '_', $penyelenggara);
+    $penyelenggara_safe = trim($penyelenggara_safe, '_');
+
+    if (empty($penyelenggara_safe)) {
+        $penyelenggara_safe = 'event';
+    }
 
     $nama_file_gambar = null; 
     if (isset($_FILES['gambar_poster']) && $_FILES['gambar_poster']['error'] == 0) {
         
         $target_dir = "../uploads/";
         $ekstensi = pathinfo($_FILES['gambar_poster']['name'], PATHINFO_EXTENSION);
-        $nama_file_gambar = "poster_" . uniqid() . "." . $ekstensi;
+        $nama_file_gambar = "poster_" . $penyelenggara_safe . "_" . $tanggal_create . "." . $ekstensi;
         $target_file = $target_dir . $nama_file_gambar;
+
+        if (file_exists($target_file)) {
+            $nama_file_gambar = "poster_" . $penyelenggara_safe . "_" . $tanggal_create . "_" . uniqid() . "." . $ekstensi;
+            $target_file = $target_dir . $nama_file_gambar;
+        }
 
         if (!move_uploaded_file($_FILES['gambar_poster']['tmp_name'], $target_file)) {
             $response['message'] = 'Gagal mengupload gambar poster.';

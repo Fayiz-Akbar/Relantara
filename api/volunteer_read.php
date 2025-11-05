@@ -2,7 +2,9 @@
 
 header('Content-Type: application/json');
 include '../config/db_connect.php';
-$sql = "SELECT * FROM tbl_volunteer ORDER BY tanggal_posting DESC";
+$sql = "SELECT * FROM tbl_volunteer 
+        WHERE deleted_at IS NULL 
+        ORDER BY tanggal_posting DESC";
 
 
 $result = mysqli_query($conn, $sql);
