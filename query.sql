@@ -34,28 +34,26 @@ CREATE TABLE tbl_relawan (
   tanggal_daftar TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
-CREATE TABLE tbl_kategori (
-  id_kategori INT AUTO_INCREMENT PRIMARY KEY,
-  nama_kategori VARCHAR(100) NOT NULL UNIQUE
-) ENGINE=InnoDB;
-
 CREATE TABLE tbl_kegiatan (
   id_kegiatan INT AUTO_INCREMENT PRIMARY KEY,
-  id_penyelenggara INT NOT NULL,
-  id_kategori INT,
+
+  id_penyelenggara INT NOT NULL, 
+
+
   judul VARCHAR(255) NOT NULL,
   deskripsi TEXT NOT NULL,
   lokasi VARCHAR(200),
   tanggal_mulai DATE,
   tanggal_selesai DATE,
   gambar_poster VARCHAR(255),
-  kuota INT DEFAULT 0,
-  benefit TEXT,
+  kuota INT DEFAULT 0 COMMENT '0 berarti tidak terbatas',
+  benefit TEXT COMMENT 'Contoh: Sertifikat, Konsumsi, Transport, Relasi',
   status_kegiatan ENUM('Draft', 'Published', 'Completed', 'Cancelled') DEFAULT 'Published',
   tanggal_posting TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (id_penyelenggara) REFERENCES tbl_penyelenggara(id_penyelenggara) ON DELETE CASCADE,
-  FOREIGN KEY (id_kategori) REFERENCES tbl_kategori(id_kategori) ON DELETE SET NULL
+
+  FOREIGN KEY (id_penyelenggara) REFERENCES tbl_penyelenggara(id_penyelenggara) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
 
 CREATE TABLE tbl_pendaftaran (
   id_pendaftaran INT AUTO_INCREMENT PRIMARY KEY,
@@ -72,5 +70,3 @@ CREATE TABLE tbl_pendaftaran (
 INSERT INTO tbl_admin (username, password, nama_lengkap) 
 VALUES ('admin', '$2y$10$Y.aJ3u.3y.E/ii.A8kI.De.L.B.rJ1O6bY8z.N3fJ5.b.mXzJ3j.K', 'Admin Utama');
 
-INSERT INTO tbl_kategori (nama_kategori) 
-VALUES ('Pendidikan'), ('Lingkungan'), ('Kesehatan'), ('Sosial'), ('Bencana Alam');
