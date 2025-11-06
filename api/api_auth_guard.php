@@ -15,7 +15,7 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
 
 function checkRoleApi($allowed_roles = []) {
     if (!in_array($_SESSION['role'], $allowed_roles)) {
-        http_response_code(403); // 403 Forbidden
+        http_response_code(403);
         echo json_encode([
             'status' => 'forbidden',
             'message' => 'Akses ditolak. Peran Anda (' . htmlspecialchars($_SESSION['role']) . ') tidak memiliki izin.'

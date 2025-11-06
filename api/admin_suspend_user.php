@@ -8,7 +8,7 @@ $response = ['status' => 'error', 'message' => 'Input tidak valid.'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_POST['user_id'] ?? null;
-    $tipe_user = $_POST['tipe_user'] ?? ''; // Wajib: 'relawan' atau 'penyelenggara'
+    $tipe_user = $_POST['tipe_user'] ?? ''; 
 
     $allowed_types = ['relawan', 'penyelenggara'];
 

@@ -10,12 +10,11 @@ $password = $_POST['password'] ?? '';
 
 if (empty($email_username) || empty($password)) {
     $response['message'] = "Email/Username dan Password wajib diisi.";
-    http_response_code(400); // Bad Request
+    http_response_code(400); 
     echo json_encode($response);
     exit;
 }
 
-// 1. Cek Admin (Sesuai V2 Prompt: login pakai username)
 $stmt_admin = $conn->prepare("SELECT id_admin, nama_lengkap, password FROM tbl_admin WHERE username = ?"); //
 $stmt_admin->bind_param("s", $email_username);
 $stmt_admin->execute();
@@ -39,7 +38,6 @@ if ($result_admin->num_rows === 1) {
 }
 $stmt_admin->close();
 
-// 2. Cek Penyelenggara (Sesuai V2 Prompt: login pakai email)
 $stmt_org = $conn->prepare("SELECT id_penyelenggara, nama_organisasi, password, status_verifikasi FROM tbl_penyelenggara WHERE email = ?"); //
 $stmt_org->bind_param("s", $email_username);
 $stmt_org->execute();
@@ -48,7 +46,6 @@ $result_org = $stmt_org->get_result();
 if ($result_org->num_rows === 1) {
     $org = $result_org->fetch_assoc();
     if (password_verify($password, $org['password'])) {
-        // Logika V2 Prompt: Cek status verifikasi
         if ($org['status_verifikasi'] === 'Pending') {
             $response['message'] = "Akun Penyelenggara Anda masih 'Pending'. Harap tunggu verifikasi Admin.";
             http_response_code(403);
@@ -77,7 +74,6 @@ if ($result_org->num_rows === 1) {
 }
 $stmt_org->close();
 
-// 3. Cek Relawan (Sesuai V2 Prompt: login pakai email)
 $stmt_relawan = $conn->prepare("SELECT id_relawan, nama_lengkap, password FROM tbl_relawan WHERE email = ?"); //
 $stmt_relawan->bind_param("s", $email_username);
 $stmt_relawan->execute();
