@@ -1,8 +1,8 @@
 <?php
-include './api_auth_guard.php';
-include '../config/db_connect.php';
+include '../core/auth_guard.php';
+checkRole(['admin']);
 
-checkRoleApi(['admin']);
+include '../config/db_connect.php';
 
 $response = ['status' => 'error', 'message' => 'Input tidak valid.'];
 
@@ -23,22 +23,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_bind_param($stmt, "i", $user_id);
 
         if (mysqli_stmt_execute($stmt)) {
-            $response['status'] = 'success';
-            $response['message'] = "User $tipe_user (ID: $user_id) berhasil di-suspend (soft delete).";
+            $_SESSION['message'] = "User $tipe_user (ID: $user_id) berhasil di-suspend (soft delete).";
         } else {
-            http_response_code(500);
-            $response['message'] = 'Eksekusi database gagal.';
+            $_SESSION['message'] = 'Eksekusi database gagal.';
         }
         mysqli_stmt_close($stmt);
     } else {
-        http_response_code(400);
-        $response['message'] = "'user_id' dan 'tipe_user' ('relawan' atau 'penyelenggara') wajib diisi.";
+        $_SESSION['message'] = "'user_id' dan 'tipe_user' ('relawan' atau 'penyelenggara') wajib diisi.";
     }
 } else {
-    http_response_code(405);
-    $response['message'] = 'Metode tidak diizinkan. Gunakan POST.';
+    $_SESSION['message'] = 'Metode tidak diizinkan. Gunakan POST.';
 }
 
-echo json_encode($response);
 mysqli_close($conn);
+header("Location: manage_pengguna.php");
+exit;
 ?>
