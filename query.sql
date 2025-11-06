@@ -94,8 +94,6 @@ CREATE TABLE tbl_pendaftaran (
   FOREIGN KEY (id_kegiatan) REFERENCES tbl_kegiatan(id_kegiatan) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
-INSERT INTO tbl_admin (username, password, nama_lengkap) 
-VALUES ('admin', '$2y$10$Y.aJ3u.3y.E/ii.A8kI.De.L.B.rJ1O6bY8z.N3fJ5.b.mXzJ3j.K', 'Admin Utama');
 
 INSERT INTO `tbl_penyelenggara` 
     (`id_penyelenggara`, `nama_organisasi`, `email`, `password`, `status_verifikasi`) 
