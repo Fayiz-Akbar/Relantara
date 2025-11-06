@@ -97,10 +97,6 @@ CREATE TABLE tbl_pendaftaran (
 INSERT INTO tbl_admin (username, password, nama_lengkap) 
 VALUES ('admin', '$2y$10$Y.aJ3u.3y.E/ii.A8kI.De.L.B.rJ1O6bY8z.N3fJ5.b.mXzJ3j.K', 'Admin Utama');
 
-/* * Kueri 1: Membuat 1 Penyelenggara 'Verified'
- * Kita butuh ini agar id_penyelenggara di tbl_kegiatan valid.
- * (Passwordnya 'pass1234')
- */
 INSERT INTO `tbl_penyelenggara` 
     (`id_penyelenggara`, `nama_organisasi`, `email`, `password`, `status_verifikasi`) 
 VALUES 

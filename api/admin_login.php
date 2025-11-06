@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../config/db_connect.php'; //
+include '../config/db_connect.php'; 
 header('Content-Type: application/json');
 
 $response = ['status' => 'error', 'message' => 'Email/Username atau Password salah.'];
@@ -97,7 +97,6 @@ if ($result_relawan->num_rows === 1) {
 }
 $stmt_relawan->close();
 
-// Jika semua gagal
 http_response_code(401);
 echo json_encode($response);
 $conn->close();
