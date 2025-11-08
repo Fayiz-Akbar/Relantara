@@ -23,8 +23,25 @@
             max-width: 700px;
             text-align: center;
         }
+        
+        .back-link {
+            display: block;
+            text-align: left;
+            margin-bottom: 1.5rem;
+            color: #777;
+            text-decoration: none;
+            font-weight: 400;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover {
+            color: #4A90E2;
+            text-decoration: underline;
+        }
+
         .container h1 {
             color: #4A90E2;
+            margin-top: 0;
             margin-bottom: 0.5rem;
         }
         .container p {
@@ -81,6 +98,7 @@
 </head>
 <body>
     <div class="container">
+        <a href="index.php" class="back-link">&larr; Kembali ke Beranda</a>
         <h1>Gabung Bersama Relantara</h1>
         <p>Pilih peran Anda untuk memulai.</p>
         

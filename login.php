@@ -25,9 +25,25 @@ session_start();
             width: 100%;
             max-width: 400px;
         }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            color: #777;
+            text-decoration: none;
+            font-weight: 400;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover {
+            color: #4A90E2;
+            text-decoration: underline;
+        }
+
         .container h1 {
             color: #4A90E2;
             text-align: center;
+            margin-top: 0;
             margin-bottom: 1.5rem;
         }
         .form-group {
@@ -93,6 +109,7 @@ session_start();
 </head>
 <body>
     <div class="container">
+        <a href="index.php" class="back-link">&larr; Kembali ke Beranda</a>
         <h1>Login Relantara</h1>
 
         <?php
@@ -108,7 +125,7 @@ session_start();
 
         <form action="proses/proses_login.php" method="POST">
             <div class="form-group">
-                <label for="email_username">Email atau Username</label>
+                <label for="email_username">Email</label>
                 <input type="text" id="email_username" name="email_username" required>
             </div>
             <div class="form-group">

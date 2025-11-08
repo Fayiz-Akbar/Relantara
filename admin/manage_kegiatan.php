@@ -8,7 +8,7 @@ $sql = "SELECT k.id_kegiatan, k.judul, k.status_kegiatan, k.tanggal_posting, p.n
         FROM tbl_kegiatan k
         JOIN tbl_penyelenggara p ON k.id_penyelenggara = p.id_penyelenggara
         WHERE k.deleted_at IS NULL
-        ORDER BY k.tanggal_posting DESC";
+        ORDER BY k.status_kegiatan = 'Pending' DESC, k.tanggal_posting DESC";
 $result = $conn->query($sql);
 ?>
 <!DOCTYPE html>
@@ -109,28 +109,44 @@ $result = $conn->query($sql);
         .content-table tr:last-child td {
             border-bottom: none;
         }
-        .btn-delete {
+        .btn {
             padding: 0.5rem 1rem;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 500;
             transition: opacity 0.2s ease;
+            text-align: center;
+        }
+        .btn-delete {
             background-color: #C62828;
             color: white;
+            width: 66%;
         }
-        .btn-delete:hover {
-            opacity: 0.8;
+        .btn-delete:hover { opacity: 0.8; }
+        .btn-approve {
+            background-color: #34A853;
+            color: white;
+        }
+        .btn-reject {
+            background-color: #F5A623;
+            color: white;
         }
         .status {
             padding: 0.25rem 0.5rem;
             border-radius: 4px;
             font-weight: 500;
             font-size: 0.8rem;
+            display: inline-block;
         }
         .status-Published { background-color: #E8F5E9; color: #2E7D32; }
         .status-Pending { background-color: #FFF8E1; color: #F5A623; }
         .status-Rejected { background-color: #FFEBEE; color: #C62828; }
+        .action-form {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -176,9 +192,17 @@ $result = $conn->query($sql);
                         </span>
                     </td>
                     <td>
+                        <?php if ($row['status_kegiatan'] == 'Pending'): ?>
+                            <form class="action-form" action="proses_update_kegiatan_status.php" method="POST">
+                                <input type="hidden" name="id_kegiatan" value="<?php echo $row['id_kegiatan']; ?>">
+                                <button type="submit" name="status_baru" value="Published" class="btn btn-approve">Setujui</button>
+                                <button type="submit" name="status_baru" value="Rejected" class="btn btn-reject">Tolak</button>
+                            </form>
+                        <?php endif; ?>
+                        
                         <form action="proses_delete_kegiatan.php" method="POST" onsubmit="return confirm('Anda yakin ingin menghapus kegiatan ini?');">
                             <input type="hidden" name="id_kegiatan" value="<?php echo $row['id_kegiatan']; ?>">
-                            <button type="submit" class="btn-delete">Hapus</button>
+                            <button type="submit" class="btn btn-delete">Hapus</button>
                         </form>
                     </td>
                 </tr>

@@ -22,9 +22,25 @@
             width: 100%;
             max-width: 400px;
         }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            color: #777;
+            text-decoration: none;
+            font-weight: 400;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+        .back-link:hover {
+            color: #4A90E2;
+            text-decoration: underline;
+        }
+
         .container h1 {
             color: #4A90E2;
             text-align: center;
+            margin-top: 0;
             margin-bottom: 1.5rem;
         }
         .form-group {
@@ -74,6 +90,7 @@
 </head>
 <body>
     <div class="container">
+        <a href="register.php" class="back-link">&larr; Kembali ke Pilihan Peran</a>
         <h1>Daftar (Penyelenggara)</h1>
 
         <form action="proses/proses_register_penyelenggara.php" method="POST">

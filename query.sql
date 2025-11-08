@@ -88,6 +88,9 @@ CREATE TABLE tbl_pendaftaran (
   FOREIGN KEY (id_kegiatan) REFERENCES tbl_kegiatan(id_kegiatan) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+ALTER TABLE tbl_kegiatan
+ADD COLUMN waktu_mulai TIME NULL AFTER tanggal_selesai,
+ADD COLUMN waktu_selesai TIME NULL AFTER waktu_mulai;
 
 INSERT INTO `tbl_penyelenggara` 
     (`id_penyelenggara`, `nama_organisasi`, `email`, `password`, `status_verifikasi`) 
