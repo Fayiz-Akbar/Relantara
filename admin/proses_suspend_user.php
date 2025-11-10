@@ -1,15 +1,24 @@
 <?php
-include '../core/auth_guard.php';
-checkRole(['admin']);
+/*
+ * FILE: admin/proses_suspend_user.php (JSON-API Version)
+ * FUNGSI: Soft-delete user dan merespon dengan JSON.
+ */
 
+include '../core/auth_guard.php';
 include '../config/db_connect.php';
 
+header('Content-Type: application/json');
 $response = ['status' => 'error', 'message' => 'Input tidak valid.'];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $user_id = $_POST['user_id'] ?? null;
-    $tipe_user = $_POST['tipe_user'] ?? ''; 
+try {
+    checkRole(['admin']);
 
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception('Metode tidak diizinkan.');
+    }
+
+    $user_id = $_POST['user_id'] ?? null;
+    $tipe_user = $_POST['tipe_user'] ?? '';
     $allowed_types = ['relawan', 'penyelenggara'];
 
     if ($user_id && in_array($tipe_user, $allowed_types)) {
@@ -19,23 +28,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $sql = "UPDATE $tabel SET deleted_at = NOW() WHERE $kolom_id = ?";
         
-        $stmt = mysqli_prepare($conn, $sql);
-        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $user_id);
 
-        if (mysqli_stmt_execute($stmt)) {
-            $_SESSION['message'] = "User $tipe_user (ID: $user_id) berhasil di-suspend (soft delete).";
+        if ($stmt->execute()) {
+            if ($stmt->affected_rows > 0) {
+                $response['status'] = 'success';
+                $response['message'] = "User $tipe_user (ID: $user_id) berhasil di-suspend (soft delete).";
+            } else {
+                $response['status'] = 'info';
+                $response['message'] = 'Tidak ada data yang diubah. User mungkin sudah di-suspend atau ID tidak ditemukan.';
+            }
         } else {
-            $_SESSION['message'] = 'Eksekusi database gagal.';
+            throw new Exception('Eksekusi database gagal: ' . $stmt->error);
         }
-        mysqli_stmt_close($stmt);
+        $stmt->close();
     } else {
-        $_SESSION['message'] = "'user_id' dan 'tipe_user' ('relawan' atau 'penyelenggara') wajib diisi.";
+        throw new Exception("'user_id' dan 'tipe_user' ('relawan' atau 'penyelenggara') wajib diisi.");
     }
-} else {
-    $_SESSION['message'] = 'Metode tidak diizinkan. Gunakan POST.';
+
+} catch (Exception $e) {
+    http_response_code(403);
+    $response['message'] = $e->getMessage();
 }
 
-mysqli_close($conn);
-header("Location: manage_pengguna.php");
+$conn->close();
+echo json_encode($response);
 exit;
 ?>

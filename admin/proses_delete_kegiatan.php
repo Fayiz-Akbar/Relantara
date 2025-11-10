@@ -1,35 +1,51 @@
 <?php
-include '../core/auth_guard.php';
-checkRole(['admin']);
+/*
+ * FILE: admin/proses_delete_kegiatan.php (JSON-API Version)
+ * FUNGSI: Soft-delete kegiatan dan merespon dengan JSON.
+ */
 
+include '../core/auth_guard.php';
 include '../config/db_connect.php';
 
+header('Content-Type: application/json');
 $response = ['status' => 'error', 'message' => 'Input tidak valid.'];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+try {
+    checkRole(['admin']);
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception('Metode tidak diizinkan.');
+    }
+
     $id_kegiatan = $_POST['id_kegiatan'] ?? null;
 
     if ($id_kegiatan) {
-        
         $sql = "UPDATE tbl_kegiatan SET deleted_at = NOW() WHERE id_kegiatan = ?";
-        
-        $stmt = mysqli_prepare($conn, $sql);
-        mysqli_stmt_bind_param($stmt, "i", $id_kegiatan);
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id_kegiatan);
 
-        if (mysqli_stmt_execute($stmt)) {
-            $_SESSION['message'] = "Kegiatan (ID: $id_kegiatan) berhasil di-soft-delete.";
+        if ($stmt->execute()) {
+            if ($stmt->affected_rows > 0) {
+                $response['status'] = 'success';
+                $response['message'] = "Kegiatan (ID: $id_kegiatan) berhasil di-soft-delete.";
+            } else {
+                $response['status'] = 'info';
+                $response['message'] = 'Tidak ada data yang diubah (ID tidak ditemukan).';
+            }
         } else {
-            $_SESSION['message'] = 'Eksekusi database gagal.';
+            throw new Exception('Eksekusi database gagal: ' . $stmt->error);
         }
-        mysqli_stmt_close($stmt);
+        $stmt->close();
     } else {
-        $_SESSION['message'] = "'id_kegiatan' wajib diisi.";
+        throw new Exception("'id_kegiatan' wajib diisi.");
     }
-} else {
-    $_SESSION['message'] = 'Metode tidak diizinkan. Gunakan POST.';
+
+} catch (Exception $e) {
+    http_response_code(403);
+    $response['message'] = $e->getMessage();
 }
 
-mysqli_close($conn);
-header("Location: manage_kegiatan.php");
+$conn->close();
+echo json_encode($response);
 exit;
 ?>

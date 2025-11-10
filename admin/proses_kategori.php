@@ -1,55 +1,72 @@
 <?php
+/*
+ * FILE: admin/proses_kategori.php (JSON-API Version)
+ * FUNGSI: Membuat atau mengupdate kategori dan merespon dengan JSON.
+ */
+
 include '../core/auth_guard.php';
-checkRole(['admin']);
 include '../config/db_connect.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['action'])) {
-    header("Location: manage_kategori.php");
-    exit;
-}
+header('Content-Type: application/json');
+$response = ['status' => 'error', 'message' => 'Input tidak valid.'];
 
-$action = $_POST['action'];
-$nama_kategori = $_POST['nama_kategori'] ?? '';
-$deskripsi = $_POST['deskripsi'] ?? '';
+try {
+    checkRole(['admin']);
 
-if (empty($nama_kategori)) {
-    $_SESSION['message'] = "Nama kategori wajib diisi.";
-    header("Location: manage_kategori.php");
-    exit;
-}
-
-if ($action === 'add') {
-    // === PROSES TAMBAH (CREATE) ===
-    $sql = "INSERT INTO tbl_kategori (nama_kategori, deskripsi) VALUES (?, ?)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ss", $nama_kategori, $deskripsi);
-    
-    if ($stmt->execute()) {
-        $_SESSION['message'] = "Kategori berhasil ditambahkan.";
-    } else {
-        $_SESSION['message'] = "Gagal menambahkan kategori: " . $stmt->error;
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['action'])) {
+        throw new Exception('Metode tidak diizinkan atau aksi tidak diset.');
     }
-    $stmt->close();
 
-} elseif ($action === 'update' && isset($_POST['id_kategori'])) {
-    // === PROSES EDIT (UPDATE) ===
-    $id_kategori = $_POST['id_kategori'];
-    $sql = "UPDATE tbl_kategori SET nama_kategori = ?, deskripsi = ? WHERE id_kategori = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssi", $nama_kategori, $deskripsi, $id_kategori);
+    $action = $_POST['action'];
+    $nama_kategori = $_POST['nama_kategori'] ?? '';
+    $deskripsi = $_POST['deskripsi'] ?? '';
 
-    if ($stmt->execute()) {
-        $_SESSION['message'] = "Kategori berhasil diperbarui.";
-    } else {
-        $_SESSION['message'] = "Gagal memperbarui kategori: " . $stmt->error;
+    if (empty($nama_kategori)) {
+        throw new Exception('Nama kategori wajib diisi.');
     }
-    $stmt->close();
 
-} else {
-    $_SESSION['message'] = "Aksi tidak valid.";
+    if ($action === 'add') {
+        $sql = "INSERT INTO tbl_kategori (nama_kategori, deskripsi) VALUES (?, ?)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ss", $nama_kategori, $deskripsi);
+        
+        if ($stmt->execute()) {
+            $response['status'] = 'success';
+            $response['message'] = "Kategori '$nama_kategori' berhasil ditambahkan.";
+            $response['new_kategori_id'] = $conn->insert_id;
+        } else {
+            throw new Exception('Gagal menambahkan kategori: ' . $stmt->error);
+        }
+        $stmt->close();
+
+    } elseif ($action === 'update' && isset($_POST['id_kategori'])) {
+        $id_kategori = $_POST['id_kategori'];
+        $sql = "UPDATE tbl_kategori SET nama_kategori = ?, deskripsi = ? WHERE id_kategori = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ssi", $nama_kategori, $deskripsi, $id_kategori);
+
+        if ($stmt->execute()) {
+            if ($stmt->affected_rows > 0) {
+                $response['status'] = 'success';
+                $response['message'] = "Kategori (ID: $id_kategori) berhasil diperbarui.";
+            } else {
+                $response['status'] = 'info';
+                $response['message'] = 'Tidak ada data yang diubah.';
+            }
+        } else {
+            throw new Exception('Gagal memperbarui kategori: ' . $stmt->error);
+        }
+        $stmt->close();
+    } else {
+        throw new Exception('Aksi tidak valid atau ID Kategori tidak ada untuk update.');
+    }
+
+} catch (Exception $e) {
+    http_response_code(403);
+    $response['message'] = $e->getMessage();
 }
 
 $conn->close();
-header("Location: manage_kategori.php");
+echo json_encode($response);
 exit;
 ?>

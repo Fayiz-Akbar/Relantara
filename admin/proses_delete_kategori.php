@@ -1,32 +1,51 @@
 <?php
+/*
+ * FILE: admin/proses_delete_kategori.php (JSON-API Version)
+ * FUNGSI: Soft-delete kategori dan merespon dengan JSON.
+ */
+
 include '../core/auth_guard.php';
-checkRole(['admin']);
 include '../config/db_connect.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+header('Content-Type: application/json');
+$response = ['status' => 'error', 'message' => 'Input tidak valid.'];
+
+try {
+    checkRole(['admin']);
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception('Metode tidak diizinkan.');
+    }
+
     $id_kategori = $_POST['id_kategori'] ?? null;
 
     if ($id_kategori) {
-        // Kita gunakan Soft Delete (sesuai pola tabelmu)
         $sql = "UPDATE tbl_kategori SET deleted_at = NOW() WHERE id_kategori = ?";
-        
-        $stmt = mysqli_prepare($conn, $sql);
-        mysqli_stmt_bind_param($stmt, "i", $id_kategori);
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id_kategori);
 
-        if (mysqli_stmt_execute($stmt)) {
-            $_SESSION['message'] = "Kategori (ID: $id_kategori) berhasil di-soft-delete.";
+        if ($stmt->execute()) {
+            if ($stmt->affected_rows > 0) {
+                $response['status'] = 'success';
+                $response['message'] = "Kategori (ID: $id_kategori) berhasil di-soft-delete.";
+            } else {
+                $response['status'] = 'info';
+                $response['message'] = 'Tidak ada data yang diubah (ID tidak ditemukan).';
+            }
         } else {
-            $_SESSION['message'] = 'Eksekusi database gagal.';
+            throw new Exception('Eksekusi database gagal: ' . $stmt->error);
         }
-        mysqli_stmt_close($stmt);
+        $stmt->close();
     } else {
-        $_SESSION['message'] = "'id_kategori' wajib diisi.";
+        throw new Exception("'id_kategori' wajib diisi.");
     }
-} else {
-    $_SESSION['message'] = 'Metode tidak diizinkan. Gunakan POST.';
+
+} catch (Exception $e) {
+    http_response_code(403);
+    $response['message'] = $e->getMessage();
 }
 
-mysqli_close($conn);
-header("Location: manage_kategori.php");
+$conn->close();
+echo json_encode($response);
 exit;
 ?>
