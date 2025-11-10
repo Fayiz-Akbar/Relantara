@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧪 Admin Tester v5.0 (JSON API) - Relantara</title>
+    <title>Admin Tester (JSON API) - Relantara</title>
     <style>
         :root {
             --primary-color: #4A90E2;
@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
 </head>
 <body>
     <header>
-        <h1>🧪 Admin Tester v5.0 (JSON API)</h1>
+        <h1>🧪 Admin Tester (JSON API)</h1>
     </header>
 
     <main>
@@ -173,13 +173,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
                     </div>
                 </div>
                 <div>
-                    <h3>Penyelenggara (Pending)</h3>
+                    <h3>Penyelenggara </h3>
                     <div class="table-wrapper">
                         <table class="content-table">
                             <thead><tr><th>ID</th><th>Nama</th><th>Status</th></tr></thead>
                             <tbody>
                                 <?php
-                                $res_pending = $conn->query("SELECT id_penyelenggara, nama_organisasi, status_verifikasi FROM tbl_penyelenggara WHERE status_verifikasi = 'Pending' AND deleted_at IS NULL");
+                                $res_pending = $conn->query("SELECT id_penyelenggara, nama_organisasi, status_verifikasi FROM tbl_penyelenggara WHERE deleted_at IS NULL");
                                 while($row = $res_pending->fetch_assoc()):
                                 ?>
                                 <tr>
