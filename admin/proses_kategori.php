@@ -1,8 +1,4 @@
 <?php
-/*
- * FILE: admin/proses_kategori.php (JSON-API Version)
- * FUNGSI: Membuat atau mengupdate kategori dan merespon dengan JSON.
- */
 
 include '../core/auth_guard.php';
 include '../config/db_connect.php';

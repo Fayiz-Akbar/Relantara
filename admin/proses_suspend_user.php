@@ -1,8 +1,4 @@
 <?php
-/*
- * FILE: admin/proses_suspend_user.php (JSON-API Version)
- * FUNGSI: Soft-delete user dan merespon dengan JSON.
- */
 
 include '../core/auth_guard.php';
 include '../config/db_connect.php';

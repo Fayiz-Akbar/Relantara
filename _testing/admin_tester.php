@@ -1,19 +1,11 @@
 <?php
-/*
- * FILE: _testing/admin_tester.php (Versi 5.0 - JSON API)
- * FUNGSI: Menggunakan Fetch API (JavaScript) untuk mengirim form
- * dan menangani respon JSON dari backend.
- */
 
-// FUNGSI: Mulai sesi di paling atas
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// FUNGSI: Sertakan koneksi DB (untuk Data Viewer)
 include '../config/db_connect.php';
 
-// FUNGSI: Logika Logout (satu-satunya form submit normal)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
     if ($_POST['session_action'] === 'logout') {
         session_unset();
@@ -436,17 +428,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Temukan semua form yang ditandai untuk API
             const apiForms = document.querySelectorAll('.api-form');
-            
-            // Pasang listener ke setiap form
             apiForms.forEach(form => {
                 form.addEventListener('submit', handleApiSubmit);
             });
         });
 
         async function handleApiSubmit(event) {
-            // 1. Mencegah form dari submit normal (yang me-refresh halaman)
             event.preventDefault();
             
             const form = event.target;
@@ -454,7 +442,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
             const messageBox = document.getElementById('message-box');
             const jsonOutput = document.getElementById('json-output');
 
-            // 2. Tampilkan status loading
             button.disabled = true;
             button.textContent = 'Memproses...';
             messageBox.className = 'message message-info';
@@ -462,22 +449,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
             jsonOutput.textContent = 'Menunggu respon...';
 
             try {
-                // 3. Kumpulkan data form
                 const formData = new FormData(form);
                 
-                // 4. Kirim data menggunakan Fetch API
                 const response = await fetch(form.action, {
                     method: form.method,
                     body: formData,
                     headers: {
-                        'Accept': 'application/json' // Minta respon JSON
+                        'Accept': 'application/json' 
                     }
                 });
 
-                // 5. Ambil data JSON dari respon
                 const data = await response.json();
 
-                // 6. Tampilkan hasil di Message Box
                 messageBox.textContent = data.message || 'Aksi selesai.';
                 if (data.status === 'success') {
                     messageBox.className = 'message message-success';
@@ -487,18 +470,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
                     messageBox.className = 'message message-error';
                 }
 
-                // 7. Tampilkan JSON mentah di Output Box
-                jsonOutput.textContent = JSON.stringify(data, null, 2); // 'null, 2' untuk pretty-print
+                jsonOutput.textContent = JSON.stringify(data, null, 2); 
 
             } catch (error) {
-                // 8. Tangani jika terjadi error jaringan atau JSON tidak valid
                 messageBox.className = 'message message-error';
                 messageBox.textContent = 'Error Jaringan atau Respon Bukan JSON: ' + error.message;
                 jsonOutput.textContent = 'Fetch Gagal:\n' + error;
             } finally {
-                // 9. Aktifkan kembali tombolnya
                 button.disabled = false;
-                // Mengembalikan teks tombol ke aslinya (agak rumit, jadi kita set manual)
                 if (button.classList.contains('btn-green')) button.textContent = 'Jalankan (JSON)';
                 else if (button.classList.contains('btn-blue')) button.textContent = 'Jalankan (JSON)';
                 else if (button.classList.contains('btn-orange')) button.textContent = 'Jalankan (JSON)';
@@ -510,6 +489,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
 </body>
 </html>
 <?php
-// Selalu tutup koneksi di akhir
 $conn->close();
 ?>

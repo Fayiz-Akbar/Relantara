@@ -1,19 +1,10 @@
 <?php
-/*
- * FILE: _testing/penyelenggara_tester.php (Versi 1.0 - JSON API)
- * FUNGSI: Menggunakan Fetch API (JavaScript) untuk menguji endpoint
- * Penyelenggara (Register, Login, Create/Delete Kegiatan).
- */
-
-// FUNGSI: Mulai sesi di paling atas
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// FUNGSI: Sertakan koneksi DB (untuk Data Viewer)
 include '../config/db_connect.php';
 
-// FUNGSI: Logika Logout (satu-satunya form submit normal)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
     if ($_POST['session_action'] === 'logout') {
         session_unset();
@@ -31,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
     <title>🧪 Penyelenggara Tester v1.0 (JSON API) - Relantara</title>
     <style>
         :root {
-            --primary-color: #F5A623; /* Warna oranye untuk Penyelenggara */
+            --primary-color: #F5A623;
             --success-color: #34A853;
             --danger-color: #C62828;
             --warning-color: #F5A623;
@@ -327,8 +318,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
             jsonOutput.textContent = 'Menunggu respon...';
 
             try {
-                // FUNGSI PENTING: FormData() secara otomatis menangani
-                // text, checkbox, dan file upload (enctype="multipart/form-data")
                 const formData = new FormData(form);
                 
                 const response = await fetch(form.action, {
@@ -356,7 +345,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
                 jsonOutput.textContent = 'Fetch Gagal:\n' + error;
             } finally {
                 button.disabled = false;
-                // Mengembalikan teks tombol
                 const originalText = form.querySelector('button[type="submit"]').textContent;
                 if (originalText.includes('Daftar')) button.textContent = 'Daftar Akun Baru (JSON)';
                 else if (originalText.includes('Buat')) button.textContent = 'Buat Kegiatan (JSON)';
@@ -368,6 +356,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
 </body>
 </html>
 <?php
-// Selalu tutup koneksi di akhir
 $conn->close();
 ?>

@@ -1,8 +1,4 @@
 <?php
-/*
- * FILE: admin/proses_create_admin.php (JSON-API Version)
- * FUNGSI: Membuat admin baru dan merespon dengan JSON.
- */
 
 include '../core/auth_guard.php';
 include '../config/db_connect.php';
@@ -48,7 +44,7 @@ try {
     $stmt->close();
 
 } catch (Exception $e) {
-    http_response_code(403); // 403 untuk error otorisasi/validasi
+    http_response_code(403); 
     $response['message'] = $e->getMessage();
 }
 

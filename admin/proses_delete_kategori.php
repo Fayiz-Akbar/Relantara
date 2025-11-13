@@ -1,8 +1,4 @@
 <?php
-/*
- * FILE: admin/proses_delete_kategori.php (JSON-API Version)
- * FUNGSI: Soft-delete kategori dan merespon dengan JSON.
- */
 
 include '../core/auth_guard.php';
 include '../config/db_connect.php';

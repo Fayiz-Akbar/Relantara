@@ -1,8 +1,4 @@
 <?php
-/*
- * FILE: admin/proses_update_status_kegiatan.php (JSON-API Version)
- * FUNGSI: Mengubah status kegiatan dan merespon dengan JSON.
- */
 
 include '../core/auth_guard.php';
 include '../config/db_connect.php';

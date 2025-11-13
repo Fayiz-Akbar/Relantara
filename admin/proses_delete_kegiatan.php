@@ -1,8 +1,4 @@
 <?php
-/*
- * FILE: admin/proses_delete_kegiatan.php (JSON-API Version)
- * FUNGSI: Soft-delete kegiatan dan merespon dengan JSON.
- */
 
 include '../core/auth_guard.php';
 include '../config/db_connect.php';

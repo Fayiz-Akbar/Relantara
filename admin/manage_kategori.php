@@ -3,12 +3,10 @@ include '../core/auth_guard.php';
 checkRole(['admin']);
 include '../config/db_connect.php';
 
-// Inisialisasi variabel untuk form edit
 $edit_id = null;
 $edit_nama = '';
 $edit_deskripsi = '';
 
-// Cek jika ini adalah mode edit (dari query URL)
 if (isset($_GET['edit_id'])) {
     $edit_id = $_GET['edit_id'];
     $sql_edit = "SELECT * FROM tbl_kategori WHERE id_kategori = ? AND deleted_at IS NULL";
@@ -24,7 +22,6 @@ if (isset($_GET['edit_id'])) {
     $stmt_edit->close();
 }
 
-// Query untuk menampilkan semua kategori
 $sql_list = "SELECT id_kategori, nama_kategori, deskripsi FROM tbl_kategori WHERE deleted_at IS NULL ORDER BY nama_kategori ASC";
 $result_list = $conn->query($sql_list);
 ?>
@@ -35,8 +32,6 @@ $result_list = $conn->query($sql_list);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manajemen Kategori - Relantara</title>
     <link rel="stylesheet" href="path/to/your/admin-styles.css"> <style>
-        /* Salin-tempel (copy-paste) semua CSS dari <style> di file manage_pengguna.php */
-        /* ... (CSS dari file lain) ... */
         .form-card {
             background-color: #FFFFFF;
             padding: 1.5rem;

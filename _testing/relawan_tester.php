@@ -1,19 +1,10 @@
 <?php
-/*
- * FILE: _testing/relawan_tester.php (Versi 1.0 - JSON API)
- * FUNGSI: Menggunakan Fetch API (JavaScript) untuk menguji endpoint
- * Relawan (Register, Login, Daftar Kegiatan, Update Profil).
- */
-
-// FUNGSI: Mulai sesi di paling atas
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// FUNGSI: Sertakan koneksi DB (untuk Data Viewer)
 include '../config/db_connect.php';
 
-// FUNGSI: Logika Logout (satu-satunya form submit normal)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
     if ($_POST['session_action'] === 'logout') {
         session_unset();
@@ -31,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
     <title>🧪 Relawan Tester v1.0 (JSON API) - Relantara</title>
     <style>
         :root {
-            --primary-color: #34A853; /* Warna hijau untuk Relawan */
+            --primary-color: #34A853; 
             --success-color: #34A853;
             --danger-color: #C62828;
             --warning-color: #F5A623;
@@ -361,10 +352,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
 
                 jsonOutput.textContent = JSON.stringify(data, null, 2);
                 
-                // FUNGSI: Jika update profil sukses, update nama di header sesi
                 if(data.status === 'success' && data.new_session_nama) {
                     messageBox.textContent += ` (Nama di sesi telah diperbarui ke '${data.new_session_nama}')`;
-                    // Refresh halaman untuk melihat nama baru di header
                     setTimeout(() => window.location.reload(), 1500);
                 }
 
@@ -374,8 +363,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
                 jsonOutput.textContent = 'Fetch Gagal:\n' + error;
             } finally {
                 button.disabled = false;
-                // Mengembalikan teks tombol
-                const originalText = button.textContent; // Ambil teks asli dari tombol
+                const originalText = button.textContent; 
                 if (originalText.includes('Daftar Akun')) button.textContent = 'Daftar Akun Baru (JSON)';
                 else if (originalText.includes('Daftar Kegiatan')) button.textContent = 'Daftar Kegiatan (JSON)';
                 else if (originalText.includes('Update Profil')) button.textContent = 'Update Profil (JSON)';
@@ -386,6 +374,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
 </body>
 </html>
 <?php
-// Selalu tutup koneksi di akhir
 $conn->close();
 ?>
