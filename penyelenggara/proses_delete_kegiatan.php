@@ -1,9 +1,5 @@
 <?php
-/*
- * FILE: penyelenggara/proses_delete_kegiatan.php (JSON-API Version)
- * FUNGSI: Soft-delete kegiatan milik penyelenggara yang sedang login.
- * RESPON: JSON
- */
+
 
 include '../core/auth_guard.php';
 include '../config/db_connect.php';
@@ -25,7 +21,6 @@ try {
         throw new Exception("'id_kegiatan' wajib diisi.");
     }
 
-    // KONSEP KEAMANAN: Pastikan hanya pemilik yang bisa menghapus
     $sql = "UPDATE tbl_kegiatan SET deleted_at = NOW() 
             WHERE id_kegiatan = ? AND id_penyelenggara = ?";
     

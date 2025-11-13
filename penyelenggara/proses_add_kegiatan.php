@@ -1,9 +1,4 @@
 <?php
-/*
- * FILE: penyelenggara/proses_add_kegiatan.php (JSON-API Version)
- * FUNGSI: Menerima form-data (termasuk file) untuk membuat kegiatan baru.
- * RESPON: JSON
- */
 
 include '../core/auth_guard.php';
 include '../config/db_connect.php';
@@ -19,8 +14,6 @@ try {
     }
 
     $id_penyelenggara = $_SESSION['user_id'];
-
-    // Ambil data dari form
     $judul            = $_POST['judul'] ?? '';
     $deskripsi        = $_POST['deskripsi'] ?? '';
     $lokasi           = $_POST['lokasi'] ?? '';
@@ -35,7 +28,6 @@ try {
         throw new Exception('Gagal: Judul, deskripsi, lokasi, dan tanggal wajib diisi.');
     }
 
-    // Proses Upload Gambar (jika ada)
     $gambar_poster_path = null;
     if (isset($_FILES['gambar_poster']) && $_FILES['gambar_poster']['error'] === 0) {
         $upload_dir = '../uploads/posters/'; 
@@ -58,10 +50,8 @@ try {
         }
     }
 
-    // Transaksi Database
     $conn->begin_transaction();
 
-    // Langkah 1: Insert ke tbl_kegiatan
     $sql_kegiatan = "INSERT INTO tbl_kegiatan 
                         (id_penyelenggara, judul, deskripsi, lokasi, tanggal_mulai, tanggal_selesai, 
                          gambar_poster, kuota, benefit, status_kegiatan)
@@ -74,7 +64,6 @@ try {
     $id_kegiatan_baru = $conn->insert_id;
     $stmt_kegiatan->close();
 
-    // Langkah 2: Insert ke tbl_kegiatan_kategori
     if (!empty($kategori_ids)) {
         $sql_pivot = "INSERT INTO tbl_kegiatan_kategori (id_kegiatan, id_kategori) VALUES (?, ?)";
         $stmt_pivot = $conn->prepare($sql_pivot);
@@ -93,11 +82,11 @@ try {
 
 } catch (mysqli_sql_exception $e) {
     $conn->rollback();
-    http_response_code(500); // 500 Internal Server Error
+    http_response_code(500); 
     $response['message'] = "Gagal Total (Database): " . $e->getMessage();
 } catch (Exception $e) {
     $conn->rollback();
-    http_response_code(403); // 403 Forbidden/Bad Request
+    http_response_code(403); 
     $response['message'] = $e->getMessage();
 }
 

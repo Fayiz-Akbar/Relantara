@@ -1,16 +1,9 @@
 <?php
-/*
- * FILE: proses/proses_register_relawan.php (JSON-API Version)
- * FUNGSI: Menerima POST untuk mendaftarkan relawan baru.
- * RESPON: JSON
- */
 
 include '../config/db_connect.php';
 
 header('Content-Type: application/json');
 $response = ['status' => 'error', 'message' => 'Terjadi kesalahan.'];
-
-// Tidak ada auth_guard di sini karena ini adalah endpoint publik
 
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -35,7 +28,6 @@ try {
         throw new Exception('Format email tidak valid.');
     }
 
-    // Cek email duplikat di kedua tabel
     $stmt_check = $conn->prepare("
         SELECT email FROM tbl_relawan WHERE email = ? 
         UNION 
@@ -66,7 +58,7 @@ try {
     $stmt_insert->close();
 
 } catch (Exception $e) {
-    http_response_code(400); // 400 Bad Request untuk error validasi
+    http_response_code(400); 
     $response['message'] = $e->getMessage();
 }
 

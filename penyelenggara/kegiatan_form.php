@@ -1,15 +1,10 @@
 <?php
-// Mengimpor auth guard untuk proteksi halaman
 include '../core/auth_guard.php';
-
-// Memeriksa apakah role adalah 'penyelenggara'
-checkRole(['penyelenggara']);
-
-// Mengimpor koneksi database
 include '../config/db_connect.php';
 
-// Mengambil daftar kategori dari database untuk ditampilkan sebagai checkbox
-// Ini adalah implementasi dari langkah 3A yang kita diskusikan
+checkRole(['penyelenggara']);
+
+
 $sql_kategori = "SELECT id_kategori, nama_kategori 
                  FROM tbl_kategori 
                  WHERE deleted_at IS NULL 
@@ -24,7 +19,6 @@ $result_kategori = $conn->query($sql_kategori);
     <title>Buat Kegiatan Baru - Relantara</title>
     
     <style>
-        /* Style dasar dari penyelenggara/index.php */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #F4F6F8;
@@ -94,12 +88,11 @@ $result_kategori = $conn->query($sql_kategori);
             padding: 0.75rem;
             border: 1px solid #ccc;
             border-radius: 4px;
-            box-sizing: border-box; /* Konsistensi ukuran */
-            font-family: inherit; /* Konsistensi font */
+            box-sizing: border-box; 
+            font-family: inherit; 
             font-size: 0.95rem;
         }
         
-        /* Style untuk checkbox kategori */
         .checkbox-group {
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -118,7 +111,6 @@ $result_kategori = $conn->query($sql_kategori);
             margin-right: 0.5rem;
         }
         
-        /* Style untuk notifikasi/pesan (dari login.php) */
         .message {
             padding: 1rem;
             margin-bottom: 1rem;
@@ -154,15 +146,13 @@ $result_kategori = $conn->query($sql_kategori);
         <p>Isi formulir di bawah ini untuk mempublikasikan kegiatan Anda.</p>
         
         <?php
-        // FUNGSI: Menampilkan pesan notifikasi (sukses atau error) dari proses sebelumnya
         if (isset($_SESSION['message'])) {
             $message = $_SESSION['message'];
-            // Tentukan kelas CSS berdasarkan isi pesan
             $msg_class = (strpos(strtolower($message), 'gagal') !== false || strpos(strtolower($message), 'error') !== false) 
                          ? 'message-error' : 'message-success';
             
             echo "<div class='message $msg_class'>" . htmlspecialchars($message) . "</div>";
-            unset($_SESSION['message']); // Hapus pesan setelah ditampilkan
+            unset($_SESSION['message']); 
         }
         ?>
 
@@ -247,6 +237,5 @@ $result_kategori = $conn->query($sql_kategori);
 </body>
 </html>
 <?php
-// Menutup koneksi database di akhir file
 $conn->close();
 ?>
