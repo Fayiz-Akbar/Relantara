@@ -185,7 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
                     </div>
                 </div>
                 <div>
-                    <h3>Relawan (Aktif)</h3>
+                    <h3>Relawan</h3>
                     <div class="table-wrapper">
                         <table class="content-table">
                             <thead><tr><th>ID</th><th>Nama</th><th>Email</th></tr></thead>
@@ -206,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
                 </div>
 
                 <div>
-                    <h3>Kegiatan (Aktif)</h3>
+                    <h3>Kegiatan</h3>
                     <div class="table-wrapper">
                         <table class="content-table">
                             <thead><tr><th>ID</th><th>Judul</th><th>Status</th></tr></thead>
@@ -226,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['session_action'])) {
                     </div>
                 </div>
                 <div>
-                    <h3>Kategori (Aktif)</h3>
+                    <h3>Kategori</h3>
                     <div class="table-wrapper">
                         <table class="content-table">
                             <thead><tr><th>ID</th><th>Nama Kategori</th></tr></thead>
