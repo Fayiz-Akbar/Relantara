@@ -1,9 +1,8 @@
 <?php
-
+session_start();
 include '../config/db_connect.php';
 
-header('Content-Type: application/json');
-$response = ['status' => 'error', 'message' => 'Terjadi kesalahan.'];
+// HAPUS HEADER JSON
 
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -24,45 +23,35 @@ try {
     if (strlen($password) < 6) {
         throw new Exception('Password minimal 6 karakter.');
     }
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        throw new Exception('Format email tidak valid.');
-    }
 
-    $stmt_check = $conn->prepare("
-        SELECT email FROM tbl_relawan WHERE email = ? 
-        UNION 
-        SELECT email FROM tbl_penyelenggara WHERE email = ?
-    ");
+    // Cek Email
+    $stmt_check = $conn->prepare("SELECT email FROM tbl_relawan WHERE email = ? UNION SELECT email FROM tbl_penyelenggara WHERE email = ?");
     $stmt_check->bind_param("ss", $email, $email);
     $stmt_check->execute();
-    $stmt_check->store_result();
-
-    if ($stmt_check->num_rows > 0) {
-        throw new Exception('Email sudah terdaftar. Silakan gunakan email lain atau login.');
+    if ($stmt_check->get_result()->num_rows > 0) {
+        throw new Exception('Email sudah terdaftar. Silakan gunakan email lain.');
     }
     $stmt_check->close();
 
+    // Insert
     $hashed_password = password_hash($password, PASSWORD_BCRYPT);
-
     $sql = "INSERT INTO tbl_relawan (nama_lengkap, email, password) VALUES (?, ?, ?)";
     $stmt_insert = $conn->prepare($sql);
     $stmt_insert->bind_param("sss", $nama_lengkap, $email, $hashed_password);
 
     if ($stmt_insert->execute()) {
-        $response['status'] = 'success';
-        $response['message'] = "Registrasi relawan berhasil! Silakan login.";
-        $response['new_user_id'] = $stmt_insert->insert_id;
+        // SUKSES: Redirect ke Login
+        $_SESSION['message'] = "Registrasi relawan berhasil! Silakan login.";
+        header("Location: ../login.php");
+        exit;
     } else {
-        throw new Exception('Registrasi gagal. Terjadi kesalahan database: ' . $stmt_insert->error);
+        throw new Exception('Terjadi kesalahan database.');
     }
-    $stmt_insert->close();
 
 } catch (Exception $e) {
-    http_response_code(400); 
-    $response['message'] = $e->getMessage();
+    // GAGAL: Kembali ke Form Register
+    $_SESSION['message'] = "Gagal: " . $e->getMessage();
+    header("Location: ../register_relawan.php");
+    exit;
 }
-
-$conn->close();
-echo json_encode($response);
-exit;
 ?>

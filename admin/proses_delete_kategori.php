@@ -1,47 +1,40 @@
 <?php
-
+session_start();
 include '../core/auth_guard.php';
 include '../config/db_connect.php';
+checkRole(['penyelenggara']);
 
-header('Content-Type: application/json');
-$response = ['status' => 'error', 'message' => 'Input tidak valid.'];
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: index.php");
+    exit;
+}
 
-try {
-    checkRole(['admin']);
+$id_penyelenggara = $_SESSION['user_id'];
+$id_kegiatan = $_POST['id_kegiatan'] ?? null;
 
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new Exception('Metode tidak diizinkan.');
-    }
+if ($id_kegiatan) {
+    // Pastikan hanya menghapus milik sendiri
+    $sql = "UPDATE tbl_kegiatan SET deleted_at = NOW() 
+            WHERE id_kegiatan = ? AND id_penyelenggara = ?";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $id_kegiatan, $id_penyelenggara);
 
-    $id_kategori = $_POST['id_kategori'] ?? null;
-
-    if ($id_kategori) {
-        $sql = "UPDATE tbl_kategori SET deleted_at = NOW() WHERE id_kategori = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $id_kategori);
-
-        if ($stmt->execute()) {
-            if ($stmt->affected_rows > 0) {
-                $response['status'] = 'success';
-                $response['message'] = "Kategori (ID: $id_kategori) berhasil di-soft-delete.";
-            } else {
-                $response['status'] = 'info';
-                $response['message'] = 'Tidak ada data yang diubah (ID tidak ditemukan).';
-            }
+    if ($stmt->execute()) {
+        if ($stmt->affected_rows > 0) {
+            $_SESSION['message'] = "Kegiatan berhasil dihapus.";
         } else {
-            throw new Exception('Eksekusi database gagal: ' . $stmt->error);
+            $_SESSION['message'] = "Gagal: Kegiatan tidak ditemukan atau bukan milik Anda.";
         }
-        $stmt->close();
     } else {
-        throw new Exception("'id_kategori' wajib diisi.");
+        $_SESSION['message'] = "Error: " . $stmt->error;
     }
-
-} catch (Exception $e) {
-    http_response_code(403);
-    $response['message'] = $e->getMessage();
+    $stmt->close();
+} else {
+    $_SESSION['message'] = "Error: ID Kegiatan tidak valid.";
 }
 
 $conn->close();
-echo json_encode($response);
+header("Location: index.php");
 exit;
 ?>

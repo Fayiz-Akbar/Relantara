@@ -1,50 +1,50 @@
 <?php
-
+session_start();
 include '../core/auth_guard.php';
 include '../config/db_connect.php';
+checkRole(['relawan']);
 
-header('Content-Type: application/json');
-$response = ['status' => 'error', 'message' => 'Terjadi kesalahan.'];
+// HAPUS HEADER JSON
 
-try {
-    checkRole(['relawan']);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: index.php");
+    exit;
+}
 
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new Exception('Metode tidak diizinkan.');
-    }
+$id_relawan = $_SESSION['user_id'];
+$id_kegiatan = $_POST['id_kegiatan'] ?? null;
+$alasan_bergabung = $_POST['alasan_bergabung'] ?? '';
 
-    $id_relawan = $_SESSION['user_id'];
-    $id_kegiatan = $_POST['id_kegiatan'] ?? null;
-    $alasan_bergabung = $_POST['alasan_bergabung'] ?? '';
-
-    if (empty($id_kegiatan)) {
-        throw new Exception('ID Kegiatan wajib diisi.');
-    }
-    $sql = "INSERT INTO tbl_pendaftaran (id_relawan, id_kegiatan, alasan_bergabung, status_pendaftaran) 
-            VALUES (?, ?, ?, 'Pending')";
+if ($id_kegiatan) {
+    // Cek apakah sudah daftar
+    $check_sql = "SELECT id_pendaftaran FROM tbl_pendaftaran WHERE id_relawan = ? AND id_kegiatan = ?";
+    $check_stmt = $conn->prepare($check_sql);
+    $check_stmt->bind_param("ii", $id_relawan, $id_kegiatan);
+    $check_stmt->execute();
     
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iis", $id_relawan, $id_kegiatan, $alasan_bergabung);
-
-    if ($stmt->execute()) {
-        $response['status'] = 'success';
-        $response['message'] = "Berhasil mendaftar ke kegiatan (ID: $id_kegiatan). Status pendaftaran Anda 'Pending'.";
-        $response['new_pendaftaran_id'] = $stmt->insert_id;
+    if ($check_stmt->get_result()->num_rows > 0) {
+        $_SESSION['message'] = "Anda sudah terdaftar di kegiatan ini.";
     } else {
-        if ($conn->errno == 1062) {
-            throw new Exception("Anda sudah terdaftar di kegiatan ini.");
-        } else {
-            throw new Exception("Eksekusi database gagal: " . $stmt->error);
-        }
-    }
-    $stmt->close();
+        // Insert
+        $sql = "INSERT INTO tbl_pendaftaran (id_relawan, id_kegiatan, alasan_bergabung, status_pendaftaran) 
+                VALUES (?, ?, ?, 'Pending')";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("iis", $id_relawan, $id_kegiatan, $alasan_bergabung);
 
-} catch (Exception $e) {
-    http_response_code(403);
-    $response['message'] = $e->getMessage();
+        if ($stmt->execute()) {
+            $_SESSION['message'] = "Berhasil mendaftar! Silakan tunggu konfirmasi penyelenggara.";
+        } else {
+            $_SESSION['message'] = "Gagal mendaftar: " . $stmt->error;
+        }
+        $stmt->close();
+    }
+    $check_stmt->close();
+} else {
+    $_SESSION['message'] = "ID Kegiatan tidak valid.";
 }
 
 $conn->close();
-echo json_encode($response);
+// Redirect kembali ke halaman detail kegiatan
+header("Location: ../detail_kegiatan.php?id=" . $id_kegiatan);
 exit;
 ?>

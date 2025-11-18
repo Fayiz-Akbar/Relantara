@@ -1,47 +1,33 @@
 <?php
-
+session_start();
 include '../core/auth_guard.php';
 include '../config/db_connect.php';
+checkRole(['admin']);
 
-header('Content-Type: application/json');
-$response = ['status' => 'error', 'message' => 'Input tidak valid.'];
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: manage_kegiatan.php");
+    exit;
+}
 
-try {
-    checkRole(['admin']);
+$id_kegiatan = $_POST['id_kegiatan'] ?? null;
 
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new Exception('Metode tidak diizinkan.');
-    }
+if ($id_kegiatan) {
+    // Soft Delete (Update deleted_at)
+    $sql = "UPDATE tbl_kegiatan SET deleted_at = NOW() WHERE id_kegiatan = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id_kegiatan);
 
-    $id_kegiatan = $_POST['id_kegiatan'] ?? null;
-
-    if ($id_kegiatan) {
-        $sql = "UPDATE tbl_kegiatan SET deleted_at = NOW() WHERE id_kegiatan = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $id_kegiatan);
-
-        if ($stmt->execute()) {
-            if ($stmt->affected_rows > 0) {
-                $response['status'] = 'success';
-                $response['message'] = "Kegiatan (ID: $id_kegiatan) berhasil di-soft-delete.";
-            } else {
-                $response['status'] = 'info';
-                $response['message'] = 'Tidak ada data yang diubah (ID tidak ditemukan).';
-            }
-        } else {
-            throw new Exception('Eksekusi database gagal: ' . $stmt->error);
-        }
-        $stmt->close();
+    if ($stmt->execute()) {
+        $_SESSION['message'] = "Sukses: Kegiatan berhasil dihapus (soft delete).";
     } else {
-        throw new Exception("'id_kegiatan' wajib diisi.");
+        $_SESSION['message'] = "Error: " . $stmt->error;
     }
-
-} catch (Exception $e) {
-    http_response_code(403);
-    $response['message'] = $e->getMessage();
+    $stmt->close();
+} else {
+    $_SESSION['message'] = "Error: ID Kegiatan tidak ditemukan.";
 }
 
 $conn->close();
-echo json_encode($response);
+header("Location: manage_kegiatan.php");
 exit;
 ?>
