@@ -132,7 +132,7 @@ $result_kategori = $conn->query($sql_kategori);
 <body>
 
     <div class="header">
-        <h1>Relantara (Penyelenggara)</h1>
+        <h1>Relantara </h1>
         <div>
             <span style="margin-right: 1rem;">Halo, <?php echo htmlspecialchars($_SESSION['nama']); ?></span>
             <a href="../proses/logout.php">Logout</a>

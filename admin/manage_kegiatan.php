@@ -193,7 +193,7 @@ $result = $conn->query($sql);
                     </td>
                     <td>
                         <?php if ($row['status_kegiatan'] == 'Pending'): ?>
-                            <form class="action-form" action="proses_update_kegiatan_status.php" method="POST">
+                            <form class="action-form" action="proses_update_status_kegiatan.php" method="POST">
                                 <input type="hidden" name="id_kegiatan" value="<?php echo $row['id_kegiatan']; ?>">
                                 <button type="submit" name="status_baru" value="Published" class="btn btn-approve">Setujui</button>
                                 <button type="submit" name="status_baru" value="Rejected" class="btn btn-reject">Tolak</button>

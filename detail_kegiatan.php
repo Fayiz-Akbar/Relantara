@@ -4,11 +4,12 @@ include 'config/db_connect.php';
 
 $id_kegiatan = $_GET['id'] ?? 0;
 
-// Ambil detail kegiatan lengkap
-$sql = "SELECT k.*, p.nama_organisasi, p.foto_profil as logo_org 
+$sql = "SELECT k.*, p.nama_organisasi, p.logo as logo_org 
         FROM tbl_kegiatan k
         JOIN tbl_penyelenggara p ON k.id_penyelenggara = p.id_penyelenggara
         WHERE k.id_kegiatan = ? AND k.status_kegiatan = 'Published' AND k.deleted_at IS NULL";
+// -------------------------------
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $id_kegiatan);
 $stmt->execute();
@@ -50,7 +51,10 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'relawan') {
         .poster-banner { width: 100%; max-height: 400px; object-fit: cover; background-color: #ddd; }
         
         .content-wrapper { padding: 2rem; }
-        .org-label { color: #4A90E2; font-weight: 600; margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.5px; }
+        .org-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem; }
+        .org-logo { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid #eee; }
+        .org-label { color: #4A90E2; font-weight: 600; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.5px; }
+        
         h1 { margin: 0 0 1.5rem 0; font-size: 2rem; color: #333; }
         
         .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; background: #F8F9FA; padding: 1.5rem; border-radius: 8px; }
@@ -67,6 +71,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'relawan') {
         
         .message-box { padding: 1rem; border-radius: 4px; margin-bottom: 1rem; text-align: center; }
         .msg-success { background-color: #E8F5E9; color: #2E7D32; border: 1px solid #A5D6A7; }
+        .msg-error { background-color: #FFEBEE; color: #C62828; border: 1px solid #EF9A9A; }
         
         @media (max-width: 600px) { .main-container { padding: 0; } .content-wrapper { padding: 1.5rem; } }
     </style>
@@ -83,7 +88,10 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'relawan') {
     <div class="main-container">
         
         <?php if (isset($_SESSION['message'])): ?>
-            <div class="message-box msg-success">
+            <?php 
+                $msg_type = (strpos($_SESSION['message'], 'Gagal') !== false) ? 'msg-error' : 'msg-success';
+            ?>
+            <div class="message-box <?php echo $msg_type; ?>">
                 <?php echo $_SESSION['message']; unset($_SESSION['message']); ?>
             </div>
         <?php endif; ?>
@@ -92,7 +100,10 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'relawan') {
             <img src="uploads/poster_kegiatan/<?php echo htmlspecialchars($kegiatan['gambar_poster'] ?? 'default_poster.jpg'); ?>" class="poster-banner" alt="Poster">
             
             <div class="content-wrapper">
-                <div class="org-label"><?php echo htmlspecialchars($kegiatan['nama_organisasi']); ?></div>
+                <div class="org-header">
+                    <div class="org-label"><?php echo htmlspecialchars($kegiatan['nama_organisasi']); ?></div>
+                </div>
+                
                 <h1><?php echo htmlspecialchars($kegiatan['judul']); ?></h1>
 
                 <div class="info-grid">
@@ -108,6 +119,16 @@ if (isset($_SESSION['role']) && $_SESSION['role'] == 'relawan') {
                         <label>Kuota</label>
                         <span>
                             <?php echo ($kegiatan['kuota'] == 0) ? 'Tidak Terbatas' : htmlspecialchars($kegiatan['kuota']) . ' Orang'; ?>
+                        </span>
+                    </div>
+                     <div class="info-item">
+                        <label>Waktu</label>
+                        <span>
+                           <?php 
+                                $jam_mulai = !empty($kegiatan['waktu_mulai']) ? date('H:i', strtotime($kegiatan['waktu_mulai'])) : '-';
+                                $jam_selesai = !empty($kegiatan['waktu_selesai']) ? date('H:i', strtotime($kegiatan['waktu_selesai'])) : '-';
+                                echo $jam_mulai . ' - ' . $jam_selesai;
+                            ?>
                         </span>
                     </div>
                 </div>
