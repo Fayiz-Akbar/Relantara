@@ -171,13 +171,14 @@ $result = $stmt->get_result();
 <body>
 
     <div class="header">
-        <h1>Relantara </h1>
-        <nav class="header-nav">
-            <a href="index.php">Kegiatan Saya</a>
-            <a href="profil.php">Profil</a>
-            <a href="../proses/logout.php">Logout</a>
-        </nav>
-    </div>
+    <h1>Relantara <small style="font-size: 0.9rem; font-weight: normal; color: #666;">(Penyelenggara)</small></h1>
+    <nav class="header-nav">
+        <a href="../index.php">Lihat Website (Publik)</a> <span style="color: #ddd;">|</span>
+        <a href="index.php">Kegiatan Saya</a>
+        <a href="profil.php">Profil Organisasi</a>
+        <a href="../proses/logout.php" style="color: #C62828;">Logout</a>
+    </nav>
+</div>
 
     <div class="container">
         <div class="page-header">

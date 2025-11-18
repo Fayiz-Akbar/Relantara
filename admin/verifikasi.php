@@ -150,6 +150,7 @@ $result = $conn->query($sql);
             <a href="verifikasi.php" class="active">Verifikasi Penyelenggara</a>
             <a href="manage_kegiatan.php">Manajemen Kegiatan</a>
             <a href="manage_pengguna.php">Manajemen Pengguna</a>
+            <a href="manage_kategori.php">Manajemen Kategori</a>
         </nav>
         <div class="sidebar-footer">
             <a href="../proses/logout.php">Logout</a>

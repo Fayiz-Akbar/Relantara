@@ -132,12 +132,14 @@ $result_kategori = $conn->query($sql_kategori);
 <body>
 
     <div class="header">
-        <h1>Relantara </h1>
-        <div>
-            <span style="margin-right: 1rem;">Halo, <?php echo htmlspecialchars($_SESSION['nama']); ?></span>
-            <a href="../proses/logout.php">Logout</a>
-        </div>
-    </div>
+    <h1>Relantara <small style="font-size: 0.9rem; font-weight: normal; color: #666;">(Penyelenggara)</small></h1>
+    <nav class="header-nav">
+        <a href="../index.php">Lihat Website (Publik)</a> <span style="color: #ddd;">|</span>
+        <a href="index.php">Kegiatan Saya</a>
+        <a href="profil.php">Profil Organisasi</a>
+        <a href="../proses/logout.php" style="color: #C62828;">Logout</a>
+    </nav>
+</div>
 
     <div class="container">
         

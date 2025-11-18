@@ -121,3 +121,5 @@ INSERT INTO `tbl_kegiatan`
 VALUES 
     (1, 'Dummy: Tanam 1000 Pohon', 'Deskripsi untuk kegiatan tanam pohon...', 'Hutan Kota', 'Sertifikat, Makan Siang'),
     (1, 'Dummy: Ajar Koding Gratis', 'Deskripsi untuk kegiatan ajar koding...', 'Online via Zoom', 'Relasi, Portofolio');
+
+ALTER TABLE tbl_kategori ADD COLUMN deskripsi TEXT NULL AFTER nama_kategori;

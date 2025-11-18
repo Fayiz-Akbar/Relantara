@@ -378,29 +378,28 @@ $result = $conn->query($sql);
 <body>
 
     <header class="header">
-        <div class="container">
-            <a href="index.php" class="logo">Relantara</a>
-            <button class="menu-toggle" id="menuToggle">&#9776;</button>
-            <nav class="header-nav" id="navMenu">
-                <a href="kegiatan.php">Cari Kegiatan</a>
-                
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <?php if ($_SESSION['role'] == 'admin'): ?>
-                        <a href="admin/index.php" class="btn-login">Dashboard</a>
-                    <?php elseif ($_SESSION['role'] == 'penyelenggara'): ?>
-                        <a href="penyelenggara/index.php" class="btn-login">Dashboard Saya</a>
-                    <?php elseif ($_SESSION['role'] == 'relawan'): ?>
-                        <a href="relawan/index.php" class="btn-login">Dashboard Saya</a>
-                    <?php endif; ?>
-                    <a href="proses/logout.php" class="btn-register">Logout</a>
-                <?php else: ?>
-                    <a href="login.php" class="btn-login">Login</a>
-                    <a href="register.php" class="btn-register">Daftar</a>
+    <div class="container">
+        <a href="index.php" class="logo">Relantara</a>
+        <nav class="header-nav">
+            <a href="kegiatan.php">Cari Kegiatan</a>
+            
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <?php if ($_SESSION['role'] == 'admin'): ?>
+                    <a href="admin/index.php" class="btn-login">Dashboard Admin</a>
+                <?php elseif ($_SESSION['role'] == 'penyelenggara'): ?>
+                    <a href="penyelenggara/index.php" class="btn-login">Dashboard Saya</a>
+                <?php elseif ($_SESSION['role'] == 'relawan'): ?>
+                    <a href="relawan/index.php" class="btn-login">Dashboard Saya</a>
                 <?php endif; ?>
-
-            </nav>
-        </div>
-    </header>
+                
+                <a href="proses/logout.php" class="btn-register" style="background-color: #C62828; border-color: #C62828;">Logout</a>
+            <?php else: ?>
+                <a href="login.php" class="btn-login">Login</a>
+                <a href="register.php" class="btn-register">Daftar</a>
+            <?php endif; ?>
+        </nav>
+    </div>
+</header>
 
     <main>
         <section class="hero">

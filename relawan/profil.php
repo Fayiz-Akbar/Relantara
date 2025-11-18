@@ -33,14 +33,14 @@ $user = $stmt->get_result()->fetch_assoc();
 </head>
 <body>
     <div class="header">
-        <h1>Relantara</h1>
-        <nav>
-            <a href="index.php">Cari Kegiatan</a>
-            <a href="riwayat.php">Riwayat</a>
-            <a href="profil.php" style="color: #4A90E2;">Profil</a>
-            <a href="../proses/logout.php">Logout</a>
-        </nav>
-    </div>
+    <h1>Relantara </h1>
+    <nav class="header-nav">
+        <a href="index.php" style= "color: #000000ff;">Beranda</a>
+        <a href="riwayat.php" style= "color: #000000ff;">Riwayat Pendaftaran</a>
+        <a href="profil.php "style= "color: #000000ff;">Profil </a>
+        <a href="../proses/logout.php" style="color: #C62828;">Logout</a>
+    </nav>
+</div>
 
     <div class="container">
         <h2 style="margin-top: 0;">Edit Profil Saya</h2>
