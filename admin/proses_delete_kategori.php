@@ -13,34 +13,27 @@ try {
         throw new Exception('Metode tidak diizinkan.');
     }
 
-    $user_id = $_POST['user_id'] ?? null;
-    $tipe_user = $_POST['tipe_user'] ?? '';
-    $allowed_types = ['relawan', 'penyelenggara'];
+    $id_kategori = $_POST['id_kategori'] ?? null;
 
-    if ($user_id && in_array($tipe_user, $allowed_types)) {
-        
-        $tabel = ($tipe_user === 'relawan') ? 'tbl_relawan' : 'tbl_penyelenggara';
-        $kolom_id = ($tipe_user === 'relawan') ? 'id_relawan' : 'id_penyelenggara';
-
-        $sql = "UPDATE $tabel SET deleted_at = NOW() WHERE $kolom_id = ?";
-        
+    if ($id_kategori) {
+        $sql = "UPDATE tbl_kategori SET deleted_at = NOW() WHERE id_kategori = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $user_id);
+        $stmt->bind_param("i", $id_kategori);
 
         if ($stmt->execute()) {
             if ($stmt->affected_rows > 0) {
                 $response['status'] = 'success';
-                $response['message'] = "User $tipe_user (ID: $user_id) berhasil di-suspend (soft delete).";
+                $response['message'] = "Kategori (ID: $id_kategori) berhasil di-soft-delete.";
             } else {
                 $response['status'] = 'info';
-                $response['message'] = 'Tidak ada data yang diubah. User mungkin sudah di-suspend atau ID tidak ditemukan.';
+                $response['message'] = 'Tidak ada data yang diubah (ID tidak ditemukan).';
             }
         } else {
             throw new Exception('Eksekusi database gagal: ' . $stmt->error);
         }
         $stmt->close();
     } else {
-        throw new Exception("'user_id' dan 'tipe_user' ('relawan' atau 'penyelenggara') wajib diisi.");
+        throw new Exception("'id_kategori' wajib diisi.");
     }
 
 } catch (Exception $e) {

@@ -88,10 +88,29 @@ CREATE TABLE tbl_pendaftaran (
   FOREIGN KEY (id_kegiatan) REFERENCES tbl_kegiatan(id_kegiatan) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
-ALTER TABLE tbl_kegiatan
-ADD COLUMN waktu_mulai TIME NULL AFTER tanggal_selesai,
-ADD COLUMN waktu_selesai TIME NULL AFTER waktu_mulai;
+CREATE TABLE tbl_kategori (
+  id_kategori INT AUTO_INCREMENT PRIMARY KEY,
+  nama_kategori VARCHAR(100) NOT NULL UNIQUE,
 
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Untuk soft delete'
+) ENGINE=InnoDB;
+
+CREATE TABLE tbl_kegiatan_kategori (
+  id_kegiatan INT NOT NULL,
+  id_kategori INT NOT NULL,
+  PRIMARY KEY (id_kegiatan, id_kategori), 
+  
+  FOREIGN KEY (id_kegiatan) REFERENCES tbl_kegiatan(id_kegiatan) ON DELETE CASCADE,
+  FOREIGN KEY (id_kategori) REFERENCES tbl_kategori(id_kategori) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
+
+
+
+-- Dummy Data for Testing
 INSERT INTO `tbl_penyelenggara` 
     (`id_penyelenggara`, `nama_organisasi`, `email`, `password`, `status_verifikasi`) 
 VALUES 
