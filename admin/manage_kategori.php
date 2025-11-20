@@ -170,8 +170,47 @@ $result_list = $conn->query($sql_list);
         .btn-secondary { background-color: #e0e0e0; color: #333; margin-left: 10px; }
         .btn-secondary:hover { background-color: #d5d5d5; }
 
-        .btn-edit { background-color: #FFCA28; color: #333; margin-right: 5px; padding: 0.4rem 0.8rem; font-size: 0.85rem; }
-        .btn-delete { background-color: #C62828; color: white; padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-edit {
+            background-color: #F5A623;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background-color: #DA911F;
+        }
+
+        .btn-delete {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background-color: #dc2626;
+        }
     </style>
 </head>
 <body>
@@ -228,7 +267,7 @@ $result_list = $conn->query($sql_list);
                 <tr>
                     <th>Nama Kategori</th>
                     <th>Deskripsi</th>
-                    <th>Aksi</th>
+                    <th style="text-align: center; width: 100px;">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -238,12 +277,26 @@ $result_list = $conn->query($sql_list);
                         <td><?php echo htmlspecialchars($row['nama_kategori']); ?></td>
                         <td><?php echo htmlspecialchars($row['deskripsi'] ?? '-'); ?></td>
                         <td>
-                            <a href="manage_kategori.php?edit_id=<?php echo $row['id_kategori']; ?>" class="btn btn-edit">Edit</a>
-                            
-                            <form action="proses_delete_kategori.php" method="POST" style="display: inline;" onsubmit="return confirm('Anda yakin ingin menghapus kategori ini?');">
-                                <input type="hidden" name="id_kategori" value="<?php echo $row['id_kategori']; ?>">
-                                <button type="submit" class="btn btn-delete">Hapus</button>
-                            </form>
+                            <div class="action-buttons">
+                                <a href="manage_kategori.php?edit_id=<?php echo $row['id_kategori']; ?>" class="btn-icon btn-edit" title="Edit Kategori">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                    </svg>
+                                </a>
+                                
+                                <form action="proses_delete_kategori.php" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('Anda yakin ingin menghapus kategori ini?');">
+                                    <input type="hidden" name="id_kategori" value="<?php echo $row['id_kategori']; ?>">
+                                    <button type="submit" class="btn-icon btn-delete" title="Hapus Kategori">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                            <line x1="10" y1="11" x2="10" y2="17"/>
+                                            <line x1="14" y1="11" x2="14" y2="17"/>
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     <?php endwhile; ?>
