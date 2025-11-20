@@ -16,6 +16,8 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $id_relawan);
 $stmt->execute();
 $result = $stmt->get_result();
+
+$current_page = basename($_SERVER['PHP_SELF']);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -23,37 +25,219 @@ $result = $stmt->get_result();
     <meta charset="UTF-8">
     <title>Riwayat Kegiatan - Relantara</title>
     <style>
-        /* Gunakan style dasar yang sama agar konsisten */
-        body { font-family: sans-serif; background-color: #F4F6F8; margin: 0; }
-        .header { background: #fff; padding: 1rem 2rem; display: flex; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .header h1 { color: #4A90E2; margin: 0; }
-        .header a { text-decoration: none; color: #555; margin-left: 1.5rem; font-weight: 500; }
-        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        .card { background: #fff; padding: 1.5rem; margin-bottom: 1rem; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .card-info h3 { margin: 0 0 0.5rem 0; color: #333; }
-        .card-info p { margin: 0.2rem 0; color: #666; font-size: 0.9rem; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #F8FAFC;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: #FFFFFF;
+            padding: 0.8rem 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: #4A90E2;
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #64748b;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: #4A90E2;
+        }
+
+        .nav-links a.active {
+            color: #4A90E2;
+            font-weight: 600;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #4A90E2;
+            transition: width 0.2s ease;
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .user-menu a {
+            color: #ef4444;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+        }
+
+        .user-menu a:hover {
+            color: #dc2626;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+        }
         
-        .status-badge { padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; font-size: 0.85rem; }
-        .status-Pending { background: #FFF3E0; color: #F57C00; }
-        .status-Diterima { background: #E8F5E9; color: #2E7D32; }
-        .status-Ditolak { background: #FFEBEE; color: #C62828; }
-        .status-Selesai { background: #E3F2FD; color: #1565C0; }
+        .card {
+            background: #FFFFFF;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f1f5f9;
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        }
+
+        .card-info h3 {
+            margin: 0 0 0.5rem 0;
+            color: #1e293b;
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .card-info p {
+            margin: 0.3rem 0;
+            color: #64748b;
+            font-size: 0.9375rem;
+        }
+
+        .card-info p strong {
+            color: #475569;
+        }
+        
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            white-space: nowrap;
+        }
+
+        .status-Pending {
+            background: #FFF3E0;
+            color: #F57C00;
+        }
+
+        .status-Diterima {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .status-Ditolak {
+            background: #FFEBEE;
+            color: #C62828;
+        }
+
+        .status-Selesai {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem 2rem;
+            background-color: #fff;
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+            color: #64748b;
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+
+            .card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-    <h1>Relantara </h1>
-    <nav class="header-nav">
-        <a href="index.php" style= "color: #000000ff;">Beranda</a>
-        <a href="riwayat.php" style= "color: #000000ff;">Riwayat Pendaftaran</a>
-        <a href="profil.php "style= "color: #000000ff;">Profil </a>
-        <a href="../proses/logout.php" style="color: #C62828;">Logout</a>
-    </nav>
-</div>
+    <header class="header">
+        <div class="header-container">
+            <a href="../index.php" class="logo">Relantara</a>
+            <nav class="nav-links">
+                <a href="index.php" class="<?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">Cari Kegiatan</a>
+                <a href="riwayat.php" class="<?php echo ($current_page == 'riwayat.php') ? 'active' : ''; ?>">Riwayat Pendaftaran</a>
+                <a href="profil.php" class="<?php echo ($current_page == 'profil.php') ? 'active' : ''; ?>">Profil</a>
+            </nav>
+            <div class="user-menu">
+                <a href="../proses/logout.php">Logout</a>
+            </div>
+        </div>
+    </header>
 
     <div class="container">
-        <h2>Riwayat Pendaftaran Saya</h2>
+        <h2 class="page-title">Riwayat Pendaftaran Saya</h2>
         
         <?php if ($result->num_rows > 0): ?>
             <?php while($row = $result->fetch_assoc()): ?>
@@ -72,7 +256,7 @@ $result = $stmt->get_result();
                 </div>
             <?php endwhile; ?>
         <?php else: ?>
-            <p style="text-align: center; color: #777;">Anda belum mendaftar di kegiatan apapun.</p>
+            <p class="no-data">Anda belum mendaftar di kegiatan apapun.</p>
         <?php endif; ?>
     </div>
 </body>
