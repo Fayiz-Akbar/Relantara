@@ -55,6 +55,9 @@ $sql_kat_list = "SELECT id_kategori, nama_kategori
                  ORDER BY nama_kategori";
 $result_kat_list = $conn->query($sql_kat_list);
 ?>
+<?php
+$current_page = basename($_SERVER['PHP_SELF']);
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -62,60 +65,302 @@ $result_kat_list = $conn->query($sql_kat_list);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cari Kegiatan - Relantara</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #F4F6F8; margin: 0; }
-        .header { background-color: #FFFFFF; padding: 1rem 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
-        .header h1 { color: #4A90E2; margin: 0; font-size: 1.5rem; }
-        .header-nav a { color: #C62828; text-decoration: none; font-weight: 500; margin-left: 1rem; transition: color 0.2s; }
-        .header-nav a:hover { color: #B71C1C; }
-        .container { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
-        .welcome { font-size: 1.2rem; margin-bottom: 1.5rem; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        .filter-bar { background-color: #FFFFFF; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 2rem; display: flex; align-items: center; }
-        .filter-bar label { font-weight: 500; margin-right: 1rem; }
-        .filter-bar select { padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; flex-grow: 1; }
-        
-        .kegiatan-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
-        .kegiatan-card { background-color: #FFFFFF; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease; display: flex; flex-direction: column; }
-        .kegiatan-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
-        
-        .card-image { 
-            width: 100%; 
-            height: 180px; 
-            object-fit: cover; 
-            background-color: #eee;
-            border-bottom: 1px solid #eee;
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #F8FAFC;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: #FFFFFF;
+            padding: 0.8rem 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: #4A90E2;
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #64748b;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: #4A90E2;
+        }
+
+        .nav-links a.active {
+            color: #4A90E2;
+            font-weight: 600;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #4A90E2;
+            transition: width 0.2s ease;
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .user-menu a {
+            color: #ef4444;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+        }
+
+        .user-menu a:hover {
+            color: #dc2626;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        .welcome {
+            font-size: 1.125rem;
+            margin-bottom: 1.5rem;
+            color: #1e293b;
+        }
+
+        .welcome strong {
+            color: #4A90E2;
+        }
+
+        .filter-bar {
+            background-color: #FFFFFF;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f1f5f9;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .filter-bar label {
+            font-weight: 600;
+            color: #475569;
+            white-space: nowrap;
+        }
+
+        .filter-bar form {
+            flex: 1;
+        }
+
+        .filter-bar select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            color: #1e293b;
+            background-color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-bar select:focus {
+            outline: none;
+            border-color: #4A90E2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+        }
+
+        .kegiatan-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .kegiatan-card {
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f1f5f9;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .kegiatan-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
         }
         
-        .card-content { padding: 1rem 1.5rem; flex-grow: 1; }
-        .card-content h3 { margin: 0 0 0.5rem 0; color: #333; font-size: 1.2rem; }
-        .card-content .organisasi { font-size: 0.9rem; color: #555; font-weight: 500; margin-bottom: 0.75rem; }
-        .card-content .lokasi { font-size: 0.9rem; color: #777; margin-bottom: 1rem; }
-        .kategori-tags { font-size: 0.8rem; color: #4A90E2; font-style: italic; margin-top: auto; }
-        
-        .btn-detail { display: block; background-color: #4A90E2; color: white; text-align: center; padding: 0.75rem; text-decoration: none; font-weight: 500; margin-top: 1rem; transition: background-color 0.2s ease; }
-        .btn-detail:hover { background-color: #357ABD; }
-        .no-data { text-align: center; padding: 2rem; background-color: #fff; border-radius: 8px; color: #555; grid-column: 1 / -1; }
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .card-content {
+            padding: 1.25rem 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-content h3 {
+            margin: 0 0 0.5rem 0;
+            color: #1e293b;
+            font-size: 1.125rem;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .card-content .organisasi {
+            font-size: 0.875rem;
+            color: #64748b;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-content .lokasi {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+        }
+
+        .kategori-tags {
+            font-size: 0.8125rem;
+            color: #4A90E2;
+            font-style: italic;
+            margin-top: auto;
+            padding-top: 0.5rem;
+        }
+
+        .btn-detail {
+            display: block;
+            background-color: #4A90E2;
+            color: white;
+            text-align: center;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-detail:hover {
+            background-color: #357ABD;
+            transform: translateY(-1px);
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem 2rem;
+            background-color: #fff;
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+            color: #64748b;
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .kegiatan-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="header">
-    <h1>Relantara </h1>
-    <nav class="header-nav">
-        <a href="index.php" style= "color: #000000ff;">Beranda</a>
-        <a href="riwayat.php" style= "color: #000000ff;">Riwayat Pendaftaran</a>
-        <a href="profil.php "style= "color: #000000ff;">Profil </a>
-        <a href="../proses/logout.php" style="color: #C62828;">Logout</a>
-    </nav>
-</div>
+    <header class="header">
+        <div class="header-container">
+            <a href="../index.php" class="logo">Relantara</a>
+            <nav class="nav-links">
+                <a href="index.php" class="<?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">Cari Kegiatan</a>
+                <a href="riwayat.php" class="<?php echo ($current_page == 'riwayat.php') ? 'active' : ''; ?>">Riwayat Pendaftaran</a>
+                <a href="profil.php" class="<?php echo ($current_page == 'profil.php') ? 'active' : ''; ?>">Profil</a>
+            </nav>
+            <div class="user-menu">
+                <a href="../proses/logout.php">Logout</a>
+            </div>
+        </div>
+    </header>
+
     <div class="container">
         <p class="welcome">Selamat datang, <strong><?php echo htmlspecialchars($_SESSION['nama']); ?></strong>!</p>
         
         <div class="filter-bar">
-            <label for="kategori_id">Cari berdasarkan Kategori:</label>
-            <form action="index.php" method="GET" style="flex-grow: 1; margin: 0;">
+            <label for="kategori_id">Filter Kategori:</label>
+            <form action="index.php" method="GET">
                 <select name="kategori_id" id="kategori_id" onchange="this.form.submit()">
-                    <option value="">-- Tampilkan Semua Kategori --</option>
+                    <option value="">Semua Kategori</option>
                     <?php while($kat = $result_kat_list->fetch_assoc()): ?>
                         <option 
                             value="<?php echo $kat['id_kategori']; ?>"
@@ -128,7 +373,7 @@ $result_kat_list = $conn->query($sql_kat_list);
             </form>
         </div>
 
-        <h2>Temukan Kegiatan</h2>
+        <h2 class="section-title">Kegiatan Tersedia</h2>
         <div class="kegiatan-grid">
             <?php if ($result_kegiatan->num_rows > 0): ?>
                 <?php while($keg = $result_kegiatan->fetch_assoc()): ?>
