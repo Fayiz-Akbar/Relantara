@@ -96,7 +96,8 @@
                 {name: 'lokasi', label: 'Lokasi', type: 'text', required: true},
                 {name: 'kuota', label: 'Kuota', type: 'number', required: true},
                 {name: 'tanggal_mulai', label: 'Tanggal Mulai', type: 'date', required: true},
-                {name: 'tanggal_selesai', label: 'Tanggal Selesai', type: 'date', required: true}
+                {name: 'tanggal_selesai', label: 'Tanggal Selesai', type: 'date', required: true},
+                {name: 'gambar_poster', label: 'Poster Kegiatan', type: 'file', required: false, accept: 'image/*'}
             ],
             update_kegiatan: [
                 {name: 'id_kegiatan', label: 'ID Kegiatan', type: 'number', required: true},
@@ -107,7 +108,8 @@
                 {name: 'lokasi', label: 'Lokasi', type: 'text', required: true},
                 {name: 'kuota', label: 'Kuota', type: 'number', required: true},
                 {name: 'tanggal_mulai', label: 'Tanggal Mulai', type: 'date', required: true},
-                {name: 'tanggal_selesai', label: 'Tanggal Selesai', type: 'date', required: true}
+                {name: 'tanggal_selesai', label: 'Tanggal Selesai', type: 'date', required: true},
+                {name: 'gambar_poster', label: 'Poster Kegiatan (Optional)', type: 'file', required: false, accept: 'image/*'}
             ],
             delete_kegiatan: [
                 {name: 'id_kegiatan', label: 'ID Kegiatan', type: 'number', required: true},
@@ -169,6 +171,13 @@
                         <div class="form-group">
                             <label>${input.label}${input.required ? ' *' : ''}</label>
                             <textarea name="${input.name}" ${input.required ? 'required' : ''}></textarea>
+                        </div>
+                    `;
+                } else if (input.type === 'file') {
+                    html += `
+                        <div class="form-group">
+                            <label>${input.label}${input.required ? ' *' : ''}</label>
+                            <input type="file" name="${input.name}" ${input.accept ? 'accept="' + input.accept + '"' : ''} ${input.required ? 'required' : ''}>
                         </div>
                     `;
                 } else {

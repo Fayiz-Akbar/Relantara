@@ -184,12 +184,30 @@ try {
                 sendResponse('error', 'Nama Lengkap tidak boleh kosong.', null, $start_time);
             }
             
-            $sql = "UPDATE tbl_relawan SET nama_lengkap = ?, bio = ?, keahlian = ? WHERE id_relawan = ?";
+            $foto_query = "";
+            $params = [$nama_lengkap, $bio, $keahlian, $id_relawan];
+            $types = "sssi";
+            
+            if (isset($_FILES['foto_profil']) && $_FILES['foto_profil']['error'] == 0) {
+                $target_dir = "../uploads/foto_profil/";
+                if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
+                
+                $ext = pathinfo($_FILES['foto_profil']['name'], PATHINFO_EXTENSION);
+                $nama_file = "relawan_" . $id_relawan . "_" . time() . "." . $ext;
+                
+                if (move_uploaded_file($_FILES['foto_profil']['tmp_name'], $target_dir . $nama_file)) {
+                    $foto_query = ", foto_profil = ?";
+                    array_splice($params, 3, 0, $nama_file);
+                    $types = "ssssi";
+                }
+            }
+            
+            $sql = "UPDATE tbl_relawan SET nama_lengkap = ?, bio = ?, keahlian = ? $foto_query WHERE id_relawan = ?";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sssi", $nama_lengkap, $bio, $keahlian, $id_relawan);
+            $stmt->bind_param($types, ...$params);
             
             if ($stmt->execute()) {
-                sendResponse('success', 'Profil berhasil diperbarui.', null, $start_time);
+                sendResponse('success', 'Profil berhasil diperbarui.', isset($nama_file) ? ['foto_profil' => $nama_file] : null, $start_time);
             } else {
                 sendResponse('error', 'Gagal update profil: ' . $stmt->error, null, $start_time);
             }
@@ -233,12 +251,27 @@ try {
             $tanggal_mulai = $_POST['tanggal_mulai'] ?? null;
             $tanggal_selesai = $_POST['tanggal_selesai'] ?? null;
             
-            $sql = "INSERT INTO tbl_kegiatan (id_penyelenggara, judul, deskripsi, lokasi, tanggal_mulai, tanggal_selesai, kuota, benefit) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $nama_file_gambar = null;
+            
+            if (isset($_FILES['gambar_poster']) && $_FILES['gambar_poster']['error'] == 0) {
+                $target_dir = "../uploads/poster_kegiatan/";
+                if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
+                
+                $ekstensi = pathinfo($_FILES['gambar_poster']['name'], PATHINFO_EXTENSION);
+                $nama_file_gambar = "kegiatan_" . $id_penyelenggara . "_" . uniqid() . "." . $ekstensi;
+                $target_file = $target_dir . $nama_file_gambar;
+                
+                if (!move_uploaded_file($_FILES['gambar_poster']['tmp_name'], $target_file)) {
+                    $nama_file_gambar = null;
+                }
+            }
+            
+            $sql = "INSERT INTO tbl_kegiatan (id_penyelenggara, judul, deskripsi, lokasi, tanggal_mulai, tanggal_selesai, kuota, benefit, gambar_poster) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("isssssis", $id_penyelenggara, $judul, $deskripsi, $lokasi, $tanggal_mulai, $tanggal_selesai, $kuota, $benefit);
+            $stmt->bind_param("isssssiss", $id_penyelenggara, $judul, $deskripsi, $lokasi, $tanggal_mulai, $tanggal_selesai, $kuota, $benefit, $nama_file_gambar);
             
             if ($stmt->execute()) {
-                sendResponse('success', 'Kegiatan baru berhasil dibuat. Menunggu persetujuan admin.', ['id_kegiatan' => $conn->insert_id], $start_time);
+                sendResponse('success', 'Kegiatan baru berhasil dibuat. Menunggu persetujuan admin.', ['id_kegiatan' => $conn->insert_id, 'gambar_poster' => $nama_file_gambar], $start_time);
             } else {
                 sendResponse('error', 'Error: Gagal menyimpan data. ' . $stmt->error, null, $start_time);
             }
@@ -255,12 +288,33 @@ try {
             $tanggal_mulai = $_POST['tanggal_mulai'] ?? null;
             $tanggal_selesai = $_POST['tanggal_selesai'] ?? null;
             
-            $sql = "UPDATE tbl_kegiatan SET judul = ?, deskripsi = ?, lokasi = ?, tanggal_mulai = ?, tanggal_selesai = ?, kuota = ?, benefit = ?, status_kegiatan = 'Pending' WHERE id_kegiatan = ? AND id_penyelenggara = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sssssisii", $judul, $deskripsi, $lokasi, $tanggal_mulai, $tanggal_selesai, $kuota, $benefit, $id_kegiatan, $id_penyelenggara);
+            $nama_file_gambar = null;
+            
+            if (isset($_FILES['gambar_poster']) && $_FILES['gambar_poster']['error'] == 0) {
+                $target_dir = "../uploads/poster_kegiatan/";
+                if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
+                
+                $ekstensi = pathinfo($_FILES['gambar_poster']['name'], PATHINFO_EXTENSION);
+                $nama_file_gambar = "kegiatan_" . $id_penyelenggara . "_" . uniqid() . "." . $ekstensi;
+                $target_file = $target_dir . $nama_file_gambar;
+                
+                if (!move_uploaded_file($_FILES['gambar_poster']['tmp_name'], $target_file)) {
+                    $nama_file_gambar = null;
+                }
+            }
+            
+            if ($nama_file_gambar) {
+                $sql = "UPDATE tbl_kegiatan SET judul = ?, deskripsi = ?, lokasi = ?, tanggal_mulai = ?, tanggal_selesai = ?, kuota = ?, benefit = ?, gambar_poster = ?, status_kegiatan = 'Pending' WHERE id_kegiatan = ? AND id_penyelenggara = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("sssssissii", $judul, $deskripsi, $lokasi, $tanggal_mulai, $tanggal_selesai, $kuota, $benefit, $nama_file_gambar, $id_kegiatan, $id_penyelenggara);
+            } else {
+                $sql = "UPDATE tbl_kegiatan SET judul = ?, deskripsi = ?, lokasi = ?, tanggal_mulai = ?, tanggal_selesai = ?, kuota = ?, benefit = ?, status_kegiatan = 'Pending' WHERE id_kegiatan = ? AND id_penyelenggara = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("sssssisii", $judul, $deskripsi, $lokasi, $tanggal_mulai, $tanggal_selesai, $kuota, $benefit, $id_kegiatan, $id_penyelenggara);
+            }
             
             if ($stmt->execute()) {
-                sendResponse('success', 'Kegiatan berhasil diperbarui. Menunggu persetujuan admin.', null, $start_time);
+                sendResponse('success', 'Kegiatan berhasil diperbarui. Menunggu persetujuan admin.', $nama_file_gambar ? ['gambar_poster' => $nama_file_gambar] : null, $start_time);
             } else {
                 sendResponse('error', 'Error: Gagal update. ' . $stmt->error, null, $start_time);
             }

@@ -90,7 +90,8 @@
                 {name: 'id_relawan', label: 'ID Relawan', type: 'number', required: true},
                 {name: 'nama_lengkap', label: 'Nama Lengkap', type: 'text', required: true},
                 {name: 'bio', label: 'Bio', type: 'textarea', required: false},
-                {name: 'keahlian', label: 'Keahlian', type: 'text', required: false}
+                {name: 'keahlian', label: 'Keahlian', type: 'text', required: false},
+                {name: 'foto_profil', label: 'Foto Profil', type: 'file', required: false, accept: 'image/*'}
             ],
             apply_kegiatan: [
                 {name: 'id_relawan', label: 'ID Relawan', type: 'number', required: true},
@@ -145,6 +146,13 @@
                         <div class="form-group">
                             <label>${input.label}${input.required ? ' *' : ''}</label>
                             <textarea name="${input.name}" ${input.required ? 'required' : ''}></textarea>
+                        </div>
+                    `;
+                } else if (input.type === 'file') {
+                    html += `
+                        <div class="form-group">
+                            <label>${input.label}${input.required ? ' *' : ''}</label>
+                            <input type="file" name="${input.name}" ${input.accept ? 'accept="' + input.accept + '"' : ''} ${input.required ? 'required' : ''}>
                         </div>
                     `;
                 } else {
