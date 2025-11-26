@@ -189,17 +189,30 @@ try {
             $types = "sssi";
             
             if (isset($_FILES['foto_profil']) && $_FILES['foto_profil']['error'] == 0) {
-                $target_dir = "../uploads/foto_profil/";
-                if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
+                $stmt_email = $conn->prepare("SELECT email FROM tbl_relawan WHERE id_relawan = ?");
+                $stmt_email->bind_param("i", $id_relawan);
+                $stmt_email->execute();
+                $result_email = $stmt_email->get_result();
                 
-                $ext = pathinfo($_FILES['foto_profil']['name'], PATHINFO_EXTENSION);
-                $nama_file = "relawan_" . $id_relawan . "_" . time() . "." . $ext;
-                
-                if (move_uploaded_file($_FILES['foto_profil']['tmp_name'], $target_dir . $nama_file)) {
-                    $foto_query = ", foto_profil = ?";
-                    array_splice($params, 3, 0, $nama_file);
-                    $types = "ssssi";
+                if ($result_email->num_rows > 0) {
+                    $relawan_data = $result_email->fetch_assoc();
+                    $email = $relawan_data['email'];
+                    
+                    $target_dir = "../uploads/foto_profil/";
+                    if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
+                    
+                    $ext = pathinfo($_FILES['foto_profil']['name'], PATHINFO_EXTENSION);
+                    date_default_timezone_set('Asia/Jakarta');
+                    $timestamp = date('Y-m-d_H-i-s');
+                    $nama_file = $email . "_" . $timestamp . "." . $ext;
+                    
+                    if (move_uploaded_file($_FILES['foto_profil']['tmp_name'], $target_dir . $nama_file)) {
+                        $foto_query = ", foto_profil = ?";
+                        array_splice($params, 3, 0, $nama_file);
+                        $types = "ssssi";
+                    }
                 }
+                $stmt_email->close();
             }
             
             $sql = "UPDATE tbl_relawan SET nama_lengkap = ?, bio = ?, keahlian = ? $foto_query WHERE id_relawan = ?";
@@ -210,6 +223,54 @@ try {
                 sendResponse('success', 'Profil berhasil diperbarui.', isset($nama_file) ? ['foto_profil' => $nama_file] : null, $start_time);
             } else {
                 sendResponse('error', 'Gagal update profil: ' . $stmt->error, null, $start_time);
+            }
+            break;
+            
+        case 'update_profil_penyelenggara':
+            $id_penyelenggara = $_POST['id_penyelenggara'] ?? '';
+            $nama_organisasi = $_POST['nama_organisasi'] ?? '';
+            $deskripsi = $_POST['deskripsi'] ?? '';
+            $alamat = $_POST['alamat'] ?? '';
+            $kontak_email = $_POST['kontak_email'] ?? '';
+            $kontak_telp = $_POST['kontak_telp'] ?? '';
+            
+            if (empty($nama_organisasi)) {
+                sendResponse('error', 'Nama Organisasi tidak boleh kosong.', null, $start_time);
+            }
+            
+            $logo_query = "";
+            $params = [$nama_organisasi, $deskripsi, $alamat, $kontak_email, $kontak_telp, $id_penyelenggara];
+            $types = "sssssi";
+            
+            if (isset($_FILES['logo']) && $_FILES['logo']['error'] == 0) {
+                $target_dir = "../uploads/logo_penyelenggara/";
+                if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
+                
+                $ext = pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION);
+                $allowed_ext = ['jpg', 'jpeg', 'png'];
+                
+                if (in_array(strtolower($ext), $allowed_ext)) {
+                    date_default_timezone_set('Asia/Jakarta');
+                    $timestamp = date('Y-m-d_H-i-s');
+                    $safe_nama = str_replace([' ', '@', '.'], '_', $nama_organisasi);
+                    $nama_file = $safe_nama . "_" . $timestamp . "." . $ext;
+                    
+                    if (move_uploaded_file($_FILES['logo']['tmp_name'], $target_dir . $nama_file)) {
+                        $logo_query = ", logo = ?";
+                        array_splice($params, 5, 0, $nama_file);
+                        $types = "ssssssi";
+                    }
+                }
+            }
+            
+            $sql = "UPDATE tbl_penyelenggara SET nama_organisasi = ?, deskripsi = ?, alamat = ?, kontak_email = ?, kontak_telp = ? $logo_query WHERE id_penyelenggara = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param($types, ...$params);
+            
+            if ($stmt->execute()) {
+                sendResponse('success', 'Profil organisasi berhasil diperbarui.', isset($nama_file) ? ['logo' => $nama_file] : null, $start_time);
+            } else {
+                sendResponse('error', 'Gagal memperbarui profil: ' . $stmt->error, null, $start_time);
             }
             break;
             
@@ -412,7 +473,7 @@ try {
                 sendResponse('error', 'ID relawan tidak diberikan.', null, $start_time);
             }
             
-            $sql = "SELECT id_relawan, nama_lengkap, email, bio, keahlian, foto_profil, created_at FROM tbl_relawan WHERE id_relawan = ?";
+            $sql = "SELECT id_relawan, nama_lengkap, email, bio, keahlian, foto_profil, tanggal_daftar as created_at FROM tbl_relawan WHERE id_relawan = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("i", $id_relawan);
             $stmt->execute();
@@ -431,12 +492,12 @@ try {
                 sendResponse('error', 'ID relawan tidak diberikan.', null, $start_time);
             }
             
-            $sql = "SELECT p.id_pendaftaran, p.status_pendaftaran, p.created_at, 
+            $sql = "SELECT p.id_pendaftaran, p.status_pendaftaran, p.tanggal_pendaftaran as created_at, 
                            k.judul, k.lokasi, k.tanggal_mulai, k.tanggal_selesai
                     FROM tbl_pendaftaran p
                     JOIN tbl_kegiatan k ON p.id_kegiatan = k.id_kegiatan
                     WHERE p.id_relawan = ?
-                    ORDER BY p.created_at DESC";
+                    ORDER BY p.tanggal_pendaftaran DESC";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("i", $id_relawan);
             $stmt->execute();
@@ -454,11 +515,11 @@ try {
             $id_penyelenggara = $_GET['id_penyelenggara'] ?? '';
             
             if ($id_penyelenggara) {
-                $sql = "SELECT * FROM tbl_kegiatan WHERE id_penyelenggara = ? AND deleted_at IS NULL ORDER BY created_at DESC";
+                $sql = "SELECT * FROM tbl_kegiatan WHERE id_penyelenggara = ? AND deleted_at IS NULL ORDER BY tanggal_posting DESC";
                 $stmt = $conn->prepare($sql);
                 $stmt->bind_param("i", $id_penyelenggara);
             } else {
-                $sql = "SELECT * FROM tbl_kegiatan WHERE deleted_at IS NULL ORDER BY created_at DESC";
+                $sql = "SELECT * FROM tbl_kegiatan WHERE deleted_at IS NULL ORDER BY tanggal_posting DESC";
                 $stmt = $conn->prepare($sql);
             }
             
@@ -479,12 +540,12 @@ try {
                 sendResponse('error', 'ID kegiatan tidak diberikan.', null, $start_time);
             }
             
-            $sql = "SELECT p.id_pendaftaran, p.status_pendaftaran, p.created_at,
+            $sql = "SELECT p.id_pendaftaran, p.status_pendaftaran, p.tanggal_pendaftaran as created_at,
                            r.id_relawan, r.nama_lengkap, r.email, r.keahlian
                     FROM tbl_pendaftaran p
                     JOIN tbl_relawan r ON p.id_relawan = r.id_relawan
                     WHERE p.id_kegiatan = ?
-                    ORDER BY p.created_at DESC";
+                    ORDER BY p.tanggal_pendaftaran DESC";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("i", $id_kegiatan);
             $stmt->execute();
@@ -499,10 +560,10 @@ try {
             break;
             
         case 'get_penyelenggara_pending':
-            $sql = "SELECT id_penyelenggara, nama_organisasi, email, status_verifikasi, created_at 
+            $sql = "SELECT id_penyelenggara, nama_organisasi, email, status_verifikasi, tanggal_daftar as created_at 
                     FROM tbl_penyelenggara 
                     WHERE status_verifikasi = 'Pending' 
-                    ORDER BY created_at ASC";
+                    ORDER BY tanggal_daftar ASC";
             $result = $conn->query($sql);
             
             $data = [];
@@ -518,7 +579,7 @@ try {
                     FROM tbl_kegiatan k
                     JOIN tbl_penyelenggara p ON k.id_penyelenggara = p.id_penyelenggara
                     WHERE k.status_kegiatan = 'Pending' AND k.deleted_at IS NULL
-                    ORDER BY k.created_at ASC";
+                    ORDER BY k.tanggal_posting ASC";
             $result = $conn->query($sql);
             
             $data = [];
@@ -530,8 +591,8 @@ try {
             break;
             
         case 'get_all_users':
-            $sql_relawan = "SELECT id_relawan as id, nama_lengkap as nama, email, 'relawan' as role, created_at FROM tbl_relawan";
-            $sql_penyelenggara = "SELECT id_penyelenggara as id, nama_organisasi as nama, email, 'penyelenggara' as role, created_at FROM tbl_penyelenggara";
+            $sql_relawan = "SELECT id_relawan as id, nama_lengkap as nama, email, 'relawan' as role, tanggal_daftar as created_at FROM tbl_relawan";
+            $sql_penyelenggara = "SELECT id_penyelenggara as id, nama_organisasi as nama, email, 'penyelenggara' as role, tanggal_daftar as created_at FROM tbl_penyelenggara";
             
             $result_relawan = $conn->query($sql_relawan);
             $result_penyelenggara = $conn->query($sql_penyelenggara);

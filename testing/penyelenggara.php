@@ -40,6 +40,7 @@
                             <option value="">-- Pilih Function --</option>
                             <option value="login">Login</option>
                             <option value="register_penyelenggara">Register Penyelenggara</option>
+                            <option value="update_profil_penyelenggara">Update Profil Organisasi</option>
                             <option value="create_kegiatan">Create Kegiatan</option>
                             <option value="update_kegiatan">Update Kegiatan</option>
                             <option value="delete_kegiatan">Delete Kegiatan</option>
@@ -87,6 +88,15 @@
                 {name: 'email', label: 'Email', type: 'email', required: true},
                 {name: 'password', label: 'Password', type: 'password', required: true},
                 {name: 'confirm_password', label: 'Konfirmasi Password', type: 'password', required: true}
+            ],
+            update_profil_penyelenggara: [
+                {name: 'id_penyelenggara', label: 'ID Penyelenggara', type: 'number', required: true},
+                {name: 'nama_organisasi', label: 'Nama Organisasi', type: 'text', required: true},
+                {name: 'deskripsi', label: 'Deskripsi', type: 'textarea', required: false},
+                {name: 'alamat', label: 'Alamat', type: 'text', required: false},
+                {name: 'kontak_email', label: 'Email Kontak', type: 'email', required: false},
+                {name: 'kontak_telp', label: 'Telepon', type: 'text', required: false},
+                {name: 'logo', label: 'Logo Organisasi', type: 'file', required: false, accept: 'image/*'}
             ],
             create_kegiatan: [
                 {name: 'id_penyelenggara', label: 'ID Penyelenggara', type: 'number', required: true},
@@ -143,6 +153,7 @@
                     <option value="">-- Pilih Function --</option>
                     <option value="login">Login</option>
                     <option value="register_penyelenggara">Register Penyelenggara</option>
+                    <option value="update_profil_penyelenggara">Update Profil Organisasi</option>
                     <option value="create_kegiatan">Create Kegiatan</option>
                     <option value="update_kegiatan">Update Kegiatan</option>
                     <option value="delete_kegiatan">Delete Kegiatan</option>
