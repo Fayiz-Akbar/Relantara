@@ -1,13 +1,19 @@
 <?php
+session_start();
 include '../core/auth_guard.php';
 checkRole(['admin']);
 include '../config/db_connect.php';
+
+$notification = null;
+if (isset($_SESSION['notification'])) {
+    $notification = $_SESSION['notification'];
+    unset($_SESSION['notification']);
+}
 
 $edit_id = null;
 $edit_nama = '';
 $edit_deskripsi = '';
 
-// Logika untuk mengambil data edit
 if (isset($_GET['edit_id'])) {
     $edit_id = $_GET['edit_id'];
     $sql_edit = "SELECT * FROM tbl_kategori WHERE id_kategori = ? AND deleted_at IS NULL";
@@ -18,14 +24,12 @@ if (isset($_GET['edit_id'])) {
     if ($result_edit->num_rows > 0) {
         $data_edit = $result_edit->fetch_assoc();
         $edit_nama = $data_edit['nama_kategori'];
-        // Pastikan kolom deskripsi ada di database. Jika error, hapus baris ini.
-        $edit_deskripsi = $data_edit['deskripsi'] ?? ''; 
+        $edit_deskripsi = $data_edit['deskripsi'];
     }
     $stmt_edit->close();
 }
 
-// Ambil semua kategori
-$sql_list = "SELECT * FROM tbl_kategori WHERE deleted_at IS NULL ORDER BY nama_kategori ASC";
+$sql_list = "SELECT id_kategori, nama_kategori, deskripsi FROM tbl_kategori WHERE deleted_at IS NULL ORDER BY nama_kategori ASC";
 $result_list = $conn->query($sql_list);
 ?>
 <!DOCTYPE html>
@@ -35,7 +39,6 @@ $result_list = $conn->query($sql_list);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manajemen Kategori - Relantara</title>
     <style>
-        /* --- CSS ADMIN LAYOUT (SAMA DENGAN FILE LAIN) --- */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #F4F6F8;
@@ -102,15 +105,17 @@ $result_list = $conn->query($sql_list);
             color: #333;
             font-size: 1.8rem;
         }
-
-        /* --- CSS KHUSUS HALAMAN INI --- */
         .form-card {
             background-color: #FFFFFF;
             padding: 1.5rem;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             margin-bottom: 2rem;
-            max-width: 1200px;
+        }
+        .form-card h3 {
+            margin: 0 0 1.5rem 0;
+            color: #333;
+            font-size: 1.2rem;
         }
         .form-group {
             margin-bottom: 1rem;
@@ -125,95 +130,158 @@ $result_list = $conn->query($sql_list);
         .form-group textarea {
             width: 100%;
             padding: 0.75rem;
-            border: 1px solid #ccc;
+            border: 1px solid #E0E0E0;
             border-radius: 4px;
             box-sizing: border-box;
             font-family: inherit;
         }
-        
-        .content-table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #FFFFFF;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            overflow: hidden;
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4A90E2;
         }
-        .content-table th,
-        .content-table td {
-            padding: 1rem 1.5rem;
-            text-align: left;
-            border-bottom: 1px solid #E0E0E0;
-        }
-        .content-table th {
-            background-color: #F4F6F8;
-            color: #555;
-            font-weight: 600;
-        }
-        .content-table td {
-            color: #333;
-        }
-        
         .btn {
-            padding: 0.6rem 1.2rem;
+            padding: 0.75rem 1.5rem;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+        }
+        .btn-primary { 
+            background-color: #4A90E2; 
+            color: white; 
+        }
+        .btn-primary:hover {
+            background-color: #357ABD;
+        }
+        .btn-secondary { 
+            background-color: #E0E0E0; 
+            color: #333; 
             text-decoration: none;
             display: inline-block;
+            margin-left: 0.5rem;
         }
-        .btn-primary { background-color: #4A90E2; color: white; }
-        .btn-primary:hover { background-color: #357ABD; }
-        
-        .btn-secondary { background-color: #e0e0e0; color: #333; margin-left: 10px; }
-        .btn-secondary:hover { background-color: #d5d5d5; }
-
-        .action-buttons {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
+        .btn-secondary:hover {
+            background-color: #D0D0D0;
         }
-
-        .btn-icon {
-            width: 36px;
-            height: 36px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+        .content-table {
+            width: 100%;
+            background-color: #FFFFFF;
             border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border-collapse: collapse;
         }
-
-        .btn-icon:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        .content-table thead {
+            background-color: #F4F6F8;
         }
-
-        .btn-edit {
-            background-color: #F5A623;
-            color: white;
+        .content-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 2px solid #E0E0E0;
         }
-
+        .content-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #F4F6F8;
+            color: #333;
+        }
+        .content-table tbody tr:hover {
+            background-color: #F9FAFB;
+        }
+        .btn-edit { 
+            background-color: #34A853; 
+            color: white; 
+            text-decoration: none; 
+            display: inline-block; 
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+        }
         .btn-edit:hover {
-            background-color: #DA911F;
+            background-color: #2E8B47;
         }
-
-        .btn-delete {
-            background-color: #ef4444;
+        .btn-delete { 
+            background-color: #C62828; 
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .btn-delete:hover {
+            background-color: #A52020;
+        }
+        .table-section {
+            margin-top: 2rem;
+        }
+        .table-section h3 {
+            margin: 0 0 1rem 0;
+            color: #333;
+            font-size: 1.2rem;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 9999;
+            min-width: 300px;
+            animation: slideIn 0.3s ease-out;
+        }
+        .notification.success {
+            background-color: #34A853;
             color: white;
         }
-
-        .btn-delete:hover {
-            background-color: #dc2626;
+        .notification.error {
+            background-color: #C62828;
+            color: white;
+        }
+        .notification.info {
+            background-color: #4A90E2;
+            color: white;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
         }
     </style>
 </head>
 <body>
+    <?php if ($notification): ?>
+    <div class="notification <?php echo htmlspecialchars($notification['type']); ?>" id="notification">
+        <?php echo htmlspecialchars($notification['message']); ?>
+    </div>
+    <script>
+        setTimeout(function() {
+            const notif = document.getElementById('notification');
+            if (notif) {
+                notif.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => notif.remove(), 300);
+            }
+        }, 3000);
+    </script>
+    <?php endif; ?>
     <div class="sidebar">
         <div class="sidebar-header">
             <h1>Admin Relantara</h1>
@@ -236,7 +304,7 @@ $result_list = $conn->query($sql_list);
         </div>
 
         <div class="form-card">
-            <h3 style="margin-top: 0;"><?php echo $edit_id ? 'Edit Kategori' : 'Tambah Kategori Baru'; ?></h3>
+            <h3><?php echo $edit_id ? 'Edit Kategori' : 'Tambah Kategori Baru'; ?></h3>
             <form action="proses_kategori.php" method="POST">
                 <?php if ($edit_id): ?>
                     <input type="hidden" name="id_kategori" value="<?php echo $edit_id; ?>">
@@ -246,7 +314,6 @@ $result_list = $conn->query($sql_list);
                     <label for="nama_kategori">Nama Kategori</label>
                     <input type="text" id="nama_kategori" name="nama_kategori" value="<?php echo htmlspecialchars($edit_nama); ?>" required>
                 </div>
-                
                 <div class="form-group">
                     <label for="deskripsi">Deskripsi (Opsional)</label>
                     <textarea id="deskripsi" name="deskripsi" rows="3"><?php echo htmlspecialchars($edit_deskripsi); ?></textarea>
@@ -255,56 +322,43 @@ $result_list = $conn->query($sql_list);
                 <button type="submit" name="action" value="<?php echo $edit_id ? 'update' : 'add'; ?>" class="btn btn-primary">
                     <?php echo $edit_id ? 'Simpan Perubahan' : 'Tambah Kategori'; ?>
                 </button>
-                
                 <?php if ($edit_id): ?>
-                    <a href="manage_kategori.php" class="btn btn-secondary">Batal</a>
+                    <a href="manage_kategori.php" class="btn btn-secondary">Batal Edit</a>
                 <?php endif; ?>
             </form>
         </div>
 
-        <table class="content-table">
-            <thead>
-                <tr>
-                    <th>Nama Kategori</th>
-                    <th>Deskripsi</th>
-                    <th style="text-align: center; width: 100px;">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if ($result_list->num_rows > 0): ?>
+        <div class="table-section">
+            <h3>Daftar Kategori</h3>
+            <table class="content-table">
+                <thead>
+                    <tr>
+                        <th>Nama Kategori</th>
+                        <th>Deskripsi</th>
+                        <th style="width: 200px;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
                     <?php while($row = $result_list->fetch_assoc()): ?>
                     <tr>
                         <td><?php echo htmlspecialchars($row['nama_kategori']); ?></td>
-                        <td><?php echo htmlspecialchars($row['deskripsi'] ?? '-'); ?></td>
+                        <td><?php echo htmlspecialchars($row['deskripsi']); ?></td>
                         <td>
-                            <div class="action-buttons">
-                                <a href="manage_kategori.php?edit_id=<?php echo $row['id_kategori']; ?>" class="btn-icon btn-edit" title="Edit Kategori">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                    </svg>
-                                </a>
-                                
-                                <form action="proses_delete_kategori.php" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('Anda yakin ingin menghapus kategori ini?');">
-                                    <input type="hidden" name="id_kategori" value="<?php echo $row['id_kategori']; ?>">
-                                    <button type="submit" class="btn-icon btn-delete" title="Hapus Kategori">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <polyline points="3 6 5 6 21 6"/>
-                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                            <line x1="10" y1="11" x2="10" y2="17"/>
-                                            <line x1="14" y1="11" x2="14" y2="17"/>
-                                        </svg>
-                                    </button>
-                                </form>
-                            </div>
+                            <a href="manage_kategori.php?edit_id=<?php echo $row['id_kategori']; ?>" class="btn-edit">Edit</a>
+                            
+                            <form action="proses_delete_kategori.php" method="POST" style="display: inline;" onsubmit="return confirm('Anda yakin ingin menghapus kategori ini?');">
+                                <input type="hidden" name="id_kategori" value="<?php echo $row['id_kategori']; ?>">
+                                <button type="submit" class="btn-delete">Hapus</button>
+                            </form>
                         </td>
                     </tr>
                     <?php endwhile; ?>
-                <?php else: ?>
-                    <tr><td colspan="3" style="text-align: center; padding: 2rem;">Belum ada data kategori.</td></tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                    <?php if ($result_list->num_rows === 0): ?>
+                        <tr><td colspan="3" style="text-align: center; padding: 2rem; color: #999;">Belum ada data kategori.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </body>
 </html>

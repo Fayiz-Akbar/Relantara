@@ -36,7 +36,10 @@ if (isset($_FILES['logo']) && $_FILES['logo']['error'] == 0) {
     $allowed_ext = ['jpg', 'jpeg', 'png'];
     
     if (in_array(strtolower($ext), $allowed_ext)) {
-        $nama_file = "org_" . $id_penyelenggara . "_" . time() . "." . $ext;
+        date_default_timezone_set('Asia/Jakarta');
+        $timestamp = date('Y-m-d_H-i-s');
+        $safe_nama = str_replace([' ', '@', '.'], '_', $nama_organisasi);
+        $nama_file = $safe_nama . "_" . $timestamp . "." . $ext;
         
         if (move_uploaded_file($_FILES['logo']['tmp_name'], $target_dir . $nama_file)) {
             $logo_query = ", logo = ?";

@@ -3,8 +3,7 @@
 include '../core/auth_guard.php';
 include '../config/db_connect.php';
 
-header('Content-Type: application/json');
-$response = ['status' => 'error', 'message' => 'Input tidak valid.'];
+session_start();
 
 try {
     checkRole(['admin']);
@@ -27,9 +26,10 @@ try {
         $stmt->bind_param("ss", $nama_kategori, $deskripsi);
         
         if ($stmt->execute()) {
-            $response['status'] = 'success';
-            $response['message'] = "Kategori '$nama_kategori' berhasil ditambahkan.";
-            $response['new_kategori_id'] = $conn->insert_id;
+            $_SESSION['notification'] = [
+                'type' => 'success',
+                'message' => "Kategori '$nama_kategori' berhasil ditambahkan."
+            ];
         } else {
             throw new Exception('Gagal menambahkan kategori: ' . $stmt->error);
         }
@@ -43,11 +43,15 @@ try {
 
         if ($stmt->execute()) {
             if ($stmt->affected_rows > 0) {
-                $response['status'] = 'success';
-                $response['message'] = "Kategori (ID: $id_kategori) berhasil diperbarui.";
+                $_SESSION['notification'] = [
+                    'type' => 'success',
+                    'message' => "Kategori '$nama_kategori' berhasil diperbarui."
+                ];
             } else {
-                $response['status'] = 'info';
-                $response['message'] = 'Tidak ada data yang diubah.';
+                $_SESSION['notification'] = [
+                    'type' => 'info',
+                    'message' => 'Tidak ada data yang diubah.'
+                ];
             }
         } else {
             throw new Exception('Gagal memperbarui kategori: ' . $stmt->error);
@@ -58,11 +62,13 @@ try {
     }
 
 } catch (Exception $e) {
-    http_response_code(403);
-    $response['message'] = $e->getMessage();
+    $_SESSION['notification'] = [
+        'type' => 'error',
+        'message' => $e->getMessage()
+    ];
 }
 
 $conn->close();
-echo json_encode($response);
+header('Location: manage_kategori.php');
 exit;
 ?>

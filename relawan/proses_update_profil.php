@@ -26,18 +26,30 @@ $params = [$nama_lengkap, $bio, $keahlian, $id_relawan];
 $types = "sssi";
 
 if (isset($_FILES['foto_profil']) && $_FILES['foto_profil']['error'] == 0) {
-    $target_dir = "../uploads/foto_profil/";
-    if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
+    $stmt_email = $conn->prepare("SELECT email FROM tbl_relawan WHERE id_relawan = ?");
+    $stmt_email->bind_param("i", $id_relawan);
+    $stmt_email->execute();
+    $result_email = $stmt_email->get_result();
     
-    $ext = pathinfo($_FILES['foto_profil']['name'], PATHINFO_EXTENSION);
-    $nama_file = "relawan_" . $id_relawan . "_" . time() . "." . $ext;
+    if ($result_email->num_rows > 0) {
+        $relawan_data = $result_email->fetch_assoc();
+        $email = $relawan_data['email'];
+        
+        $target_dir = "../uploads/foto_profil/";
+        if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
+        
+        $ext = pathinfo($_FILES['foto_profil']['name'], PATHINFO_EXTENSION);
+        date_default_timezone_set('Asia/Jakarta');
+        $timestamp = date('Y-m-d_H-i-s');
+        $nama_file = $email . "_" . $timestamp . "." . $ext;
     
-    if (move_uploaded_file($_FILES['foto_profil']['tmp_name'], $target_dir . $nama_file)) {
-        $foto_query = ", foto_profil = ?";
-        // Sisipkan parameter foto sebelum ID
-        array_splice($params, 3, 0, $nama_file); 
-        $types = "ssssi";
+        if (move_uploaded_file($_FILES['foto_profil']['tmp_name'], $target_dir . $nama_file)) {
+            $foto_query = ", foto_profil = ?";
+            array_splice($params, 3, 0, $nama_file); 
+            $types = "ssssi";
+        }
     }
+    $stmt_email->close();
 }
 
 $sql = "UPDATE tbl_relawan SET nama_lengkap = ?, bio = ?, keahlian = ? $foto_query WHERE id_relawan = ?";
